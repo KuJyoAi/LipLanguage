@@ -3,9 +3,9 @@ package midware
 import (
 	"LipLanguage/dao"
 	"LipLanguage/util"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"time"
 )
 
 func Auth(ctx *gin.Context) {
@@ -24,14 +24,17 @@ func Auth(ctx *gin.Context) {
 		})
 		return
 	}
-	//检查用户是否存在, token是否过期
-	if claims.ExpiresAt < time.Now().Unix() {
+	//检查用户是否存在
+	if !dao.UserExists(claims.Phone) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"msg": "token过期",
+			"msg": "token无效",
 		})
 		return
 	}
-	if !dao.UserExists(int64(claims.ID)) {
+	//token是否过期
+	key := fmt.Sprintf("%v_Token", claims.Phone)
+	RedisToken, err := dao.RDB.Get(key).Result()
+	if err != nil || RedisToken != token {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"msg": "token无效",
 		})

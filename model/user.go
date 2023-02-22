@@ -37,3 +37,22 @@ type UpdateInfoParam struct {
 	Gender        int       `json:"gender"`
 	HearingDevice bool      `json:"hearing_device"`
 }
+
+type UserVerifyParam struct {
+	Phone int64  `json:"phone,omitempty"`
+	Email string `json:"email,omitempty"`
+	Name  string `json:"name,omitempty"`
+}
+
+type ResetPasswordParam struct {
+	Phone    int64  `json:"phone,omitempty"`
+	Password string `json:"password,omitempty"`
+}
+type UpdatePhoneParam struct {
+	Phone int64 `json:"phone,omitempty"`
+}
+
+type UpdatePasswordParam struct {
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
+}

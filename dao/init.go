@@ -20,7 +20,12 @@ func init() {
 		logrus.Panicf("[dao.init] database connect %v", err)
 	}
 	logrus.Infof("[dao.init] Connected to mysql")
-	DB.AutoMigrate(&model.User{})
+	DB.AutoMigrate(&model.User{},
+		&model.LearnStatistics{},
+		&model.LearnRecord{},
+		&model.StandardVideo{},
+		&model.Resource{},
+		&model.RouterCounter{})
 	//连接Redis
 	RDB = redis.NewClient(&redis.Options{
 		Addr:     "127.0.0.1:6379",

@@ -1,9 +1,9 @@
 package api
 
 import (
+	"LipLanguage/dao"
 	"LipLanguage/model"
 	"LipLanguage/service"
-	"LipLanguage/util"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -102,7 +102,7 @@ func ResetPassword(ctx *gin.Context) {
 			"msg": "重置成功",
 		})
 		//重置成功, 删除掉redis里的token, 防止重放攻击
-		util.DeleteRedisToken(param.Phone)
+		dao.DeleteRedisToken(param.Phone)
 		return
 	} else {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -147,12 +147,13 @@ func UserVerify(ctx *gin.Context) {
 		})
 		return
 	}
-	code, ok := service.UserVerify(param.Phone, param.Email, param.Name)
+
+	token, ok := service.UserVerify(param.Phone, param.Name, param.Email)
 	if ok {
 		ctx.JSON(http.StatusOK, gin.H{
 			"msg": "验证成功",
 			"data": gin.H{
-				"token": code,
+				"token": token,
 			},
 		})
 		return
@@ -216,8 +217,8 @@ func UserUpdatePassword(ctx *gin.Context) {
 
 func UserProfile(ctx *gin.Context) {
 	token := ctx.GetHeader("auth")
-	cliam, _ := util.ParseToken(token)
-	user, err := service.UserGetProfile(cliam.Phone)
+	claim, _ := dao.ParseToken(token)
+	user, err := service.UserGetProfile(claim.Phone)
 	if err != nil {
 		logrus.Errorf("[api.UserProfile] %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{

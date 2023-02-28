@@ -3,7 +3,6 @@ package service
 import (
 	"LipLanguage/dao"
 	"LipLanguage/model"
-	"LipLanguage/util"
 	"errors"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -17,7 +16,7 @@ func Register(Phone int64, Password string) (string, error) {
 		Phone:         Phone,
 		Email:         "",
 		Name:          "",
-		Password:      util.Hash256(Password),
+		Password:      dao.Hash256(Password),
 		HearingDevice: false,
 		Gender:        0,
 		BirthDay:      time.Date(2050, 1, 1, 0, 0, 0, 0, time.UTC),
@@ -29,7 +28,7 @@ func Register(Phone int64, Password string) (string, error) {
 		return "", err
 	}
 
-	token, err := util.GenerateToken(user.Phone, user.Nickname)
+	token, err := dao.GenerateToken(user.Phone, user.Nickname, int64(user.ID))
 	if err != nil {
 		logrus.Errorf("[service] Register %v", err)
 		return "", err
@@ -45,12 +44,12 @@ func LoginByPhone(Phone int64, Password string) (string, error) {
 		return "", err
 	}
 
-	if util.Hash256(Password) != user.Password {
+	if dao.Hash256(Password) != user.Password {
 		logrus.Errorf("[service.Login] %v", err)
 		return "", errors.New("PasswordError")
 	}
 
-	token, err := util.GenerateToken(user.Phone, user.Nickname)
+	token, err := dao.GenerateToken(user.Phone, user.Nickname, int64(user.ID))
 	if err != nil {
 		logrus.Errorf("[service.Login] %v", err)
 		return "", err
@@ -66,12 +65,12 @@ func LoginByNickname(Nickname string, Password string) (string, error) {
 		return "", err
 	}
 
-	if util.Hash256(Password) != user.Password {
+	if dao.Hash256(Password) != user.Password {
 		logrus.Errorf("[service.Login] %v", err)
 		return "", errors.New("PasswordError")
 	}
 
-	token, err := util.GenerateToken(user.Phone, user.Nickname)
+	token, err := dao.GenerateToken(user.Phone, user.Nickname, int64(user.ID))
 	if err != nil {
 		logrus.Errorf("[service.Login] %v", err)
 		return "", err
@@ -81,7 +80,7 @@ func LoginByNickname(Nickname string, Password string) (string, error) {
 }
 
 func UserInfoUpdate(token string, info *model.UpdateInfoParam) error {
-	claim, err := util.ParseToken(token)
+	claim, err := dao.ParseToken(token)
 	if err != nil {
 		logrus.Errorf("[service.UserInfoUpdate]ParseToken %v", err)
 		return err
@@ -99,10 +98,12 @@ func UserVerify(Phone int64, Name string, Email string) (string, bool) {
 	if err != nil {
 		logrus.Errorf("[service.UserVerify] %v", err)
 		return "", false
+
 	}
+
 	if user.Email == Email && user.Name == Name {
 		//生成验证码, 5分钟有效
-		token, err := util.GenerateTokenExpires(user.Phone, user.Nickname, 5*time.Minute)
+		token, err := dao.GenerateTokenExpires(user.Phone, user.Nickname, int64(user.ID), 5*time.Minute)
 		if err != nil {
 			logrus.Errorf("[service.UserVerify] %v", err)
 			return "", false
@@ -131,7 +132,7 @@ func UserUpdatePhone(token string, Phone int64) bool {
 	return true
 }
 func UserUpdatePassword(token string, OldPassword string, NewPassword string) bool {
-	claim, _ := util.ParseToken(token)
+	claim, _ := dao.ParseToken(token)
 	err := dao.UserUpdatePassword(claim.Phone, OldPassword, NewPassword)
 	if err != nil {
 		logrus.Errorf("[service.UserUpdatePassword] %v", err)

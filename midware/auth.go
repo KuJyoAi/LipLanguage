@@ -2,7 +2,6 @@ package midware
 
 import (
 	"LipLanguage/dao"
-	"LipLanguage/util"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -17,7 +16,7 @@ func Auth(ctx *gin.Context) {
 		return
 	}
 
-	claims, err := util.ParseToken(token)
+	claims, err := dao.ParseToken(token)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"msg": "token无效",

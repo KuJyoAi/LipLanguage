@@ -2,7 +2,6 @@ package dao
 
 import (
 	"LipLanguage/model"
-	"LipLanguage/util"
 	"errors"
 	"github.com/sirupsen/logrus"
 )
@@ -55,12 +54,12 @@ func UserResetPassword(Phone int64, Password string) error {
 		return err
 	}
 
-	user.Password = util.Hash256(Password)
+	user.Password = Hash256(Password)
 	return DB.Model(model.User{}).Where("phone = ?", Phone).Save(user).Error
 }
 
 func UserUpdatePhone(token string, Phone int64) error {
-	claim, _ := util.ParseToken(token)
+	claim, _ := ParseToken(token)
 	user, err := GetUserByPhone(claim.Phone)
 	if err != nil {
 		logrus.Errorf("[dao.UserUpdatePhone] %v", err)
@@ -82,9 +81,9 @@ func UserUpdatePassword(Phone int64, Old string, New string) error {
 		logrus.Errorf("[dao.UserUpdatePassword] %v", err)
 		return err
 	}
-	if user.Password != util.Hash256(Old) {
+	if user.Password != Hash256(Old) {
 		return errors.New("PasswordWrong")
 	}
-	user.Password = util.Hash256(New)
+	user.Password = Hash256(New)
 	return DB.Model(model.User{}).Where("id = ?", user.ID).Save(user).Error
 }

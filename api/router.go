@@ -14,18 +14,20 @@ func Router(r *gin.Engine) {
 			user.POST("/login", Login)
 			user.POST("/update", midware.Auth, UserInfoUpdate)
 			user.POST("/verify", UserVerify)
-			user.POST("/resetPassword", midware.Auth, ResetPassword)
+			user.POST("/resetpassword", midware.Auth, ResetPassword)
 			user.POST("/updatephone", midware.Auth, UserUpdatePhone)
 			user.POST("/updatepassword", midware.Auth, UserUpdatePassword)
 			user.GET("/profile", midware.Auth, UserProfile)
 		}
 		learn := api.Group("learn")
 		{
-			learn.POST("/train", midware.Auth, UpdateVideo)
-			learn.GET("/history", midware.Auth, GetVideoHistory)
-			learn.GET("/today", midware.Auth, GetTodayRecord)
-			learn.GET("/month", midware.Auth, GetRecordsByMonth)
+			learn.POST("/train", midware.Auth, midware.RouterCount, UploadVideo)
+			learn.GET("/history", midware.Auth, midware.RouterCount, GetVideoHistory)
+			learn.GET("/today", midware.Auth, midware.RouterCount, GetTodayRecord)
+			learn.GET("/standard", midware.Auth, midware.RouterCount, GetAllStandardVideos)
+			learn.GET("/dayhistory", midware.Auth, midware.RouterCount, GetDayHistory)
 		}
+		api.GET("/resource", midware.Auth, GetResource)
 	}
 
 }

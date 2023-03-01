@@ -68,7 +68,7 @@ func UploadVideo(phone int64, VideoID int64, data *[]byte) (*model.AiPostRespons
 	go func() {
 		// 写文件
 		now := time.Now()
-		path = fmt.Sprintf(common.TrainVideoPath+"user/%v/vid_%v_%v-%v-%v-%v-%v-%v.mp4",
+		path = fmt.Sprintf(common.TrainVideoPath+"/src/user/%v/vid_%v_%v-%v-%v-%v-%v-%v.mp4",
 			user.ID, VideoID, now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
 		err = os.WriteFile(path, *resp.Data, 0777)
 		if err != nil {
@@ -144,7 +144,7 @@ func GetAllStandardVideos(limit, offset int) ([]model.StandardVideo, error) {
 
 func SaveTrainVideo(user *model.User, vid int64, data *[]byte) (string, error) {
 	now := time.Now()
-	path := fmt.Sprintf(common.StandardVideoPath+"/user/%v/vid_%v_%v-%v-%v-%v-%v-%v.mp4",
+	path := fmt.Sprintf(common.StandardVideoPath+"/src/user/%v/vid_%v_%v-%v-%v-%v-%v-%v.mp4",
 		user.ID, vid, now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
 
 	return path, os.WriteFile(path, *data, 0777)

@@ -28,6 +28,7 @@ func Router(r *gin.Engine) {
 			learn.GET("/dayhistory", midware.Auth, midware.RouterCount, GetDayHistory)
 		}
 		api.GET("/resource", midware.Auth, GetResource)
+		api.POST("/uploadvideo")
 	}
 
 }

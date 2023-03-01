@@ -8,7 +8,7 @@ import (
 // LearnRecord 学习数据
 type LearnRecord struct {
 	gorm.Model `json:"gorm-.-model"`
-	UserID     int64  `json:"user_id,omitempty"`
+	UserID     int64  `gorm:"index" json:"user_id,omitempty"`
 	Result     string `json:"result,omitempty"`
 	VideoID    int64  `gorm:"index" json:"video_id,omitempty"`
 	Right      bool   `json:"right,omitempty"`
@@ -33,7 +33,7 @@ type RouterCounter struct {
 // LearnStatistics 学习数据统计
 type LearnStatistics struct {
 	gorm.Model
-	UserID       uint
+	UserID       uint `gorm:"user_id,index"`
 	TodayLearn   int  `gorm:"today_learn"`
 	TodayMaster  int  `gorm:"today_master"`
 	TotalLearn   int  `gorm:"total_learn"`

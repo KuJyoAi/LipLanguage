@@ -1,7 +1,9 @@
 package dao
 
 import (
+	"LipLanguage/common"
 	"LipLanguage/model"
+	"fmt"
 	"github.com/go-redis/redis"
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
@@ -14,7 +16,9 @@ var RDB *redis.Client
 func init() {
 	var err error
 	//连接MySQL
-	dsn := "root:123456@tcp(127.0.0.1:3306)/lip?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := fmt.Sprintf(
+		"%v:%v@tcp(%v:%v)/liplanguage?charset=utf8mb4&parseTime=True&loc=Local",
+		common.MySqlUsername, common.MySqlPassword, common.MysqlIpaddr, common.MysqlPort)
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		logrus.Panicf("[dao.init] database connect %v", err)
@@ -28,8 +32,8 @@ func init() {
 		&model.RouterCounter{})
 	//连接Redis
 	RDB = redis.NewClient(&redis.Options{
-		Addr:     "127.0.0.1:6379",
-		Password: "",
+		Addr:     fmt.Sprintf("%v:%v", common.RedisIpaddr, common.RedisPort),
+		Password: common.RedisPassword,
 		DB:       0,
 	})
 	_, err = RDB.Ping().Result()

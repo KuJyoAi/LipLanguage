@@ -13,6 +13,24 @@ const (
 )
 
 const (
-	StandardVideoPath = "src"
+	StandardVideoPath = ""
 	TrainVideoPath    = ""
+)
+
+const (
+	ManagerAuth = "lip_manager"
+)
+
+const (
+	MySqlUsername = ""
+	MySqlPassword = ""
+	MysqlIpaddr   = ""
+	MysqlPort     = ""
+)
+
+const (
+	// RedisPassword RedisUsername = ""
+	RedisPassword = ""
+	RedisIpaddr   = ""
+	RedisPort     = ""
 )

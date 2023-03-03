@@ -1,7 +1,6 @@
 package dao
 
 import (
-	"LipLanguage/common"
 	"LipLanguage/model"
 	"fmt"
 	"gorm.io/gorm"
@@ -20,7 +19,7 @@ func SaveStandardVideo(data []byte, answer string) (string, error) {
 		return "", err
 	}
 	path := fmt.Sprintf(
-		common.StandardVideoPath+"/src/standard/%v_%v.mp4",
+		"src/standard/%v_%v.mp4",
 		video.ID, answer)
 	video.Path = path
 	err = DB.Model(model.StandardVideo{}).Where("id=?", video.ID).Save(&video).Error

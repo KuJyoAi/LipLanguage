@@ -1,6 +1,7 @@
 package service
 
 import (
+	"LipLanguage/common"
 	"LipLanguage/dao"
 	"LipLanguage/model"
 	"fmt"
@@ -68,7 +69,7 @@ func UploadVideo(phone int64, VideoID int64, data *[]byte) (*model.AiPostRespons
 	go func() {
 		// 写文件
 		now := time.Now()
-		path = fmt.Sprintf("src/user/%v/vid_%v_%v-%v-%v-%v-%v-%v.mp4",
+		path = fmt.Sprintf(common.SrcPath+"/src/user/u%v_v%v_%v-%v-%v-%v-%v-%v.mp4",
 			user.ID, VideoID, now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
 		err = os.WriteFile(path, *resp.Data, 0777)
 		if err != nil {
@@ -86,7 +87,7 @@ func SaveVideoFile(record model.LearnRecord, data []byte) error {
 	now := time.Now()
 	filename := fmt.Sprintf("%d_Video%d_User%d_Time%d_%d_%d.mp4",
 		record.ID, record.VideoID, record.UserID, now.Year(), now.Month(), now.Day())
-	f, err := os.OpenFile("../src/user/"+filename, os.O_CREATE, 0666)
+	f, err := os.OpenFile(common.SrcPath+"/src/user/"+filename, os.O_CREATE, 0777)
 	defer f.Close()
 	if err != nil {
 		logrus.Errorf("[service] SaveVideoFile %v", err)
@@ -144,7 +145,7 @@ func GetAllStandardVideos(limit, offset int) ([]model.StandardVideo, error) {
 
 func SaveTrainVideo(user *model.User, vid int64, data *[]byte) (string, error) {
 	now := time.Now()
-	path := fmt.Sprintf("src/user/%v/vid_%v_%v-%v-%v-%v-%v-%v.webm",
+	path := fmt.Sprintf(common.SrcPath+"/src/user/u%v_v%v_%v-%v-%v-%v-%v-%v.webm",
 		user.ID, vid, now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
 
 	return path, os.WriteFile(path, *data, 0777)

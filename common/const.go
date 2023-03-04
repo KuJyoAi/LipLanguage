@@ -13,6 +13,7 @@ const (
 )
 
 const (
+	SrcPath           = ""
 	StandardVideoPath = ""
 	TrainVideoPath    = ""
 )

@@ -9,7 +9,7 @@ import (
 )
 
 func GetResource(ctx *gin.Context) {
-	RawSrcID := ctx.GetHeader("src_id")
+	RawSrcID := ctx.GetHeader("id")
 	SrcID, err := strconv.Atoi(RawSrcID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{

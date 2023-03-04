@@ -18,6 +18,7 @@ type LearnRecord struct {
 type StandardVideo struct {
 	gorm.Model
 	Answer     string `gorm:"answer"`
+	SrcID      int64  `gorm:"sid" json:"src_id"`
 	LipID      int64  `gorm:"lid" json:"lip_id"`
 	LearnCount int64  `gorm:"learn_count" json:"-"`
 	RightCount int64  `gorm:"right_count" json:"-"`

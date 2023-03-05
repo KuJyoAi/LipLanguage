@@ -9,7 +9,7 @@ const (
 
 const (
 	HttpExpireTime = 30 * time.Second
-	AIUrl          = "127.0.0.1:9000/lip"
+	AIUrl          = "http://127.0.0.1:9000/lip"
 )
 
 const (

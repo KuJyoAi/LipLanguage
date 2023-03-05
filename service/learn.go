@@ -5,14 +5,16 @@ import (
 	"LipLanguage/dao"
 	"LipLanguage/model"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"mime/multipart"
 	"os"
 	"sync"
 	"time"
 )
 
-func UploadVideo(phone int64, VideoID int64, data *[]byte) (*model.AiPostResponse, error) {
+func UploadVideo(ctx *gin.Context, phone int64, VideoID int64, data *multipart.FileHeader) (*model.AiPostResponse, error) {
 	user, err := dao.GetUserByPhone(phone)
 	if err != nil {
 		logrus.Errorf("[service] UpdateVideo %v", err)
@@ -27,10 +29,12 @@ func UploadVideo(phone int64, VideoID int64, data *[]byte) (*model.AiPostRespons
 	}
 
 	// 保存文件到本地
-	path, err := SaveTrainVideo(user, VideoID, data)
+	path, err := SaveTrainVideo(ctx, user, VideoID, data)
 	if err != nil {
 		logrus.Errorf("[service.UploadVideo]%v", err)
 		return nil, err
+	} else {
+		logrus.Infof("Saved File %v", path)
 	}
 
 	// 发送给算法
@@ -38,6 +42,8 @@ func UploadVideo(phone int64, VideoID int64, data *[]byte) (*model.AiPostRespons
 	if err != nil {
 		logrus.Errorf("[service.UploadVideo]%v", err)
 		return nil, err
+	} else {
+		logrus.Infof("Received File From AI:%v", path)
 	}
 
 	// 保存记录, 并传回前端
@@ -143,12 +149,11 @@ func GetAllStandardVideos(limit, offset int) ([]model.StandardVideo, error) {
 	return *data, err
 }
 
-func SaveTrainVideo(user *model.User, vid int64, data *[]byte) (string, error) {
+func SaveTrainVideo(ctx *gin.Context, user *model.User, vid int64, data *multipart.FileHeader) (string, error) {
 	now := time.Now()
 	path := fmt.Sprintf(common.SrcPath+"/src/user/u%v_v%v_%v-%v-%v-%v-%v-%v.webm",
 		user.ID, vid, now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
-
-	return path, os.WriteFile(path, *data, 0777)
+	return path, ctx.SaveUploadedFile(data, path)
 }
 
 func GetDayHistory(limit int, offset int, UserID int64) ([]model.LearnStatistics, error) {

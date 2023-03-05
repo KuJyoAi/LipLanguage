@@ -6,17 +6,15 @@ import (
 	"LipLanguage/service"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"io"
 	"net/http"
 	"strconv"
 )
 
 func UploadVideo(ctx *gin.Context) {
 	VideoIDRaw := ctx.PostForm("video_id")
-	VideoDataRaw, err1 := ctx.FormFile("video")
-	data, err2 := io.ReadAll(VideoDataRaw)
-	if err1 != nil || err2 != nil {
-		logrus.Errorf("[api.UpdateVideo] %v %v", err1, err2)
+	VideoDataRaw, err := ctx.FormFile("video")
+	if err != nil {
+		logrus.Errorf("[api.UpdateVideo] %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"msg": "视频错误",
 		})
@@ -35,7 +33,7 @@ func UploadVideo(ctx *gin.Context) {
 	token := ctx.GetHeader("auth")
 	claim, _ := dao.ParseToken(token)
 
-	res, err := service.UploadVideo(claim.Phone, int64(VideoID), &data)
+	res, err := service.UploadVideo(ctx, claim.Phone, int64(VideoID), VideoDataRaw)
 	if err != nil {
 		logrus.Errorf("[api.UpdateVideo] %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{

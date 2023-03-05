@@ -4,6 +4,7 @@ import (
 	"LipLanguage/common"
 	"LipLanguage/model"
 	"LipLanguage/util"
+	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -207,9 +208,17 @@ func PostVideoPath(path string) (model.AiPostResponse, error) {
 	if err != nil {
 		logrus.Errorf("[util.PostVideoPath] %v", err)
 	}
-	video := data[data[0]+1:]
+	if resp.StatusCode != 200 {
+		//有错误
+		logrus.Errorf("[util.PostVideoPath] %v:%v",
+			resp.StatusCode, resp.Status)
+		return model.AiPostResponse{}, errors.New("ai Failed")
+	}
+
+	ResLen := data[0]          //结果长度
+	video := data[ResLen*3+1:] //使用utf-8编码 长度*3为字节数
 	ret := model.AiPostResponse{
-		Result: string(data[1 : data[0]+1]),
+		Result: string(data[1 : ResLen*3+1]),
 		Data:   &video,
 	}
 	return ret, nil

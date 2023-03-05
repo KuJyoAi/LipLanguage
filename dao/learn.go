@@ -4,7 +4,6 @@ import (
 	"LipLanguage/common"
 	"LipLanguage/model"
 	"LipLanguage/util"
-	"bytes"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -188,13 +187,13 @@ func GetAllStandardVideos(limit int, offset int) (*[]model.StandardVideo, error)
 
 // PostVideoPath 把视频文件post过去, 发送路径
 func PostVideoPath(path string) (model.AiPostResponse, error) {
-	body := bytes.NewReader([]byte(path))
-	request, err := http.NewRequest("POST", common.AIUrl, body)
+	// 请求部分
+	URL := common.AIUrl + "?VideoPath=" + path
+	request, err := http.NewRequest("GET", URL, nil)
 	if err != nil {
 		logrus.Errorf("[util.PostVideoPath] %v", err)
 		return model.AiPostResponse{}, err
 	}
-
 	request.Header.Set("Connection", "Keep-Alive")
 	var resp *http.Response
 	resp, err = http.DefaultClient.Do(request)
@@ -202,7 +201,7 @@ func PostVideoPath(path string) (model.AiPostResponse, error) {
 		logrus.Errorf("[util.PostVideoPath] %v", err)
 		return model.AiPostResponse{}, err
 	}
-
+	// 读取返回
 	defer resp.Body.Close()
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {

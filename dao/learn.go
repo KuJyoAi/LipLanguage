@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"io"
 	"net/http"
 	"time"
 )
@@ -204,7 +203,8 @@ func PostVideoPath(path string) (model.AiPostResponse, error) {
 	}
 	// 读取返回
 	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
+	data := make([]byte, 0)
+	_, err = resp.Body.Read(data)
 	if err != nil {
 		logrus.Errorf("[util.PostVideoPath] %v", err)
 	}

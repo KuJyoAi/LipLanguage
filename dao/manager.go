@@ -10,7 +10,8 @@ func SaveStandardVideo(data []byte, answer string) (string, error) {
 	video := model.StandardVideo{
 		Model:      gorm.Model{},
 		Answer:     answer,
-		Path:       "",
+		SrcID:      0,
+		LipID:      0,
 		LearnCount: 0,
 		RightCount: 0,
 	}
@@ -21,7 +22,6 @@ func SaveStandardVideo(data []byte, answer string) (string, error) {
 	path := fmt.Sprintf(
 		"src/standard/%v_%v.mp4",
 		video.ID, answer)
-	video.Path = path
 	err = DB.Model(model.StandardVideo{}).Where("id=?", video.ID).Save(&video).Error
 	return path, err
 }

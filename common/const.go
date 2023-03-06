@@ -3,35 +3,33 @@ package common
 import "time"
 
 const (
-	JwtExpireTime = 3 * 24 * time.Hour
+	JwtExpireTime = 7 * 24 * time.Hour
 	JwtKey        = "HASH256123456"
 )
 
 const (
 	HttpExpireTime = 30 * time.Second
-	AIUrl          = "http://127.0.0.1:9000/lip"
-)
-
-const (
-	SrcPath           = ""
-	StandardVideoPath = ""
-	TrainVideoPath    = ""
 )
 
 const (
 	ManagerAuth = "lip_manager"
 )
 
-const (
-	MySqlUsername = ""
-	MySqlPassword = ""
-	MysqlIpaddr   = ""
-	MysqlPort     = ""
-)
+// Mysql
 
-const (
-	// RedisPassword RedisUsername = ""
-	RedisPassword = ""
-	RedisIpaddr   = ""
-	RedisPort     = ""
-)
+var MySqlDatabase = ""
+var MySqlUsername = ""
+var MySqlPassword = ""
+var MysqlIpaddr = ""
+var MysqlPort = ""
+
+// Redis
+
+var RedisPassword = ""
+var RedisIpaddr = ""
+var RedisPort = ""
+
+//Others
+
+var SrcPath = ""
+var AIUrl = ""

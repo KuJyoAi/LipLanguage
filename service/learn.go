@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"mime/multipart"
+	"net/http"
 	"os"
 	"sync"
 	"time"
@@ -34,16 +35,25 @@ func UploadVideo(ctx *gin.Context, phone int64, VideoID int64, data *multipart.F
 		logrus.Errorf("[service.UploadVideo]%v", err)
 		return nil, err
 	} else {
-		logrus.Infof("Saved File %v", path)
+		logrus.Infof("Saved File %v time=%v", path, time.Now())
 	}
 
 	// 发送给算法
-	resp, err := dao.PostVideoPath(path)
+	resp, err, ok := dao.PostVideoPath(path)
 	if err != nil {
 		logrus.Errorf("[service.UploadVideo]%v", err)
+
+		if ok {
+			// AI算法出错, 不关后端的事
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"msg": err.Error(),
+			})
+			logrus.Infof("AI Failed:%v time = %v", path, time.Now())
+			ctx.Abort()
+		}
 		return nil, err
 	} else {
-		logrus.Infof("Received File From AI:%v", path)
+		logrus.Infof("Received File From AI:%v time = %v", path, time.Now())
 	}
 
 	// 保存记录, 并传回前端

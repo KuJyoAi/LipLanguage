@@ -1,0 +1,14 @@
+Redis:
+  IpAddr: ""
+  Password: ""
+  Port: ""
+
+MySQL:
+  Database: ""
+  Username: ""
+  Password: ""
+  IpAddr: ""
+  Port: ""
+
+SrcPath: ""
+AIUrl: "http://127.0.0.1:9000/lip"

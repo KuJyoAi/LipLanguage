@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"io"
 	"net/http"
 	"time"
 )
@@ -186,42 +187,53 @@ func GetAllStandardVideos(limit int, offset int) (*[]model.StandardVideo, error)
 }
 
 // PostVideoPath 把视频文件post过去, 发送路径
-func PostVideoPath(path string) (model.AiPostResponse, error) {
+func PostVideoPath(path string) (model.AiPostResponse, error, bool) {
 	// 请求部分
 	URL := common.AIUrl + "?VideoPath=" + path
 	request, err := http.NewRequest("GET", URL, nil)
 	if err != nil {
 		logrus.Errorf("[util.PostVideoPath] %v", err)
-		return model.AiPostResponse{}, err
+		return model.AiPostResponse{}, err, false
 	}
 	request.Header.Set("Connection", "Keep-Alive")
 	var resp *http.Response
 	resp, err = http.DefaultClient.Do(request)
 	if err != nil {
 		logrus.Errorf("[util.PostVideoPath] %v", err)
-		return model.AiPostResponse{}, err
+		return model.AiPostResponse{}, err, false
 	}
 	// 读取返回
 	defer resp.Body.Close()
-	data := make([]byte, 0)
-	_, err = resp.Body.Read(data)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		logrus.Errorf("[util.PostVideoPath] %v", err)
+		return model.AiPostResponse{}, err, false
 	}
+
 	if resp.StatusCode != 200 {
 		//有错误
 		logrus.Errorf("[util.PostVideoPath] %v:%v",
 			resp.StatusCode, resp.Status)
-		return model.AiPostResponse{}, errors.New("ai Failed")
+		return model.AiPostResponse{}, errors.New(fmt.Sprintf(
+			`AI Failed!
+Code: %v
+Status: %v
+ContentLength: %v
+It is NOT Backend's fault!😇😇😇`, resp.StatusCode, resp.Status, resp.ContentLength)), true
 	}
 
-	ResLen := data[0]          //结果长度
-	video := data[ResLen*3+1:] //使用utf-8编码 长度*3为字节数
+	ResPos := 1 //停止位
+	for ; ResPos < len(data)-3; ResPos++ {
+		if data[ResPos] == 0 && data[ResPos+1] == 0 && data[ResPos+2] == 0 {
+			break
+		}
+	}
+	video := data[ResPos:] //使用utf-8编码 长度*3为字节数
 	ret := model.AiPostResponse{
-		Result: string(data[1 : ResLen*3+1]),
+		Result: string(data[1:ResPos]),
 		Data:   &video,
 	}
-	return ret, nil
+	return ret, nil, true
 }
 
 func GetDayHistory(limit int, offset int, UserID int64) (*[]model.LearnStatistics, error) {

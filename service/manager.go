@@ -24,8 +24,8 @@ func UploadStandardVideo(
 
 	//创建文件
 	videoPath := fmt.Sprintf(common.SrcPath+"/src/standard/%v.mp4", LastVideo.ID+1)
-	err1 := ctx.SaveUploadedFile(video, videoPath)
 	lipPath := fmt.Sprintf(common.SrcPath+"/src/standard/%v_lip.mp4", LastVideo.ID+1)
+	err1 := ctx.SaveUploadedFile(video, videoPath)
 	err2 := ctx.SaveUploadedFile(lip, lipPath)
 	if err1 != nil || err2 != nil {
 		logrus.Errorf("[service.UploadStandardVideo] err1=%v err2=%v \n VideoPath=%v \n LipPath=%v",

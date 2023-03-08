@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"net/http"
 )
 
 // RouterCount 统计路由调用
@@ -13,6 +14,13 @@ func RouterCount(ctx *gin.Context) {
 	path := ctx.Request.URL.Path
 
 	token := ctx.GetHeader("auth")
+	if token == "" {
+		token = ctx.PostForm("auth")
+		if token == "" {
+			ctx.AbortWithStatus(http.StatusBadRequest)
+		}
+	}
+
 	claim, err := dao.ParseToken(token)
 	if err != nil {
 		logrus.Infof("[mid.RouterCount] %v", err)

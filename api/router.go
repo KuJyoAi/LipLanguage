@@ -23,7 +23,7 @@ func Router(r *gin.Engine) {
 		}
 		learn := api.Group("learn")
 		{
-			learn.POST("/train", midware.RouterCount, UploadVideo)
+			learn.POST("/train", midware.Auth, midware.RouterCount, UploadVideo)
 			learn.POST("/upload", UploadStandardVideo)
 			learn.GET("/get_svideo", midware.Auth, midware.RouterCount)
 			learn.GET("/history", midware.Auth, midware.RouterCount, GetVideoHistory)

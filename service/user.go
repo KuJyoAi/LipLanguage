@@ -10,6 +10,7 @@ import (
 )
 
 func Register(Phone int64, Password string) (string, error) {
+
 	user := model.User{
 		Model:         gorm.Model{},
 		AvatarUrl:     "",

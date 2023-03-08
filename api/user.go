@@ -21,6 +21,12 @@ func Register(ctx *gin.Context) {
 		})
 		return
 	}
+	if dao.UserExists(param.Phone) {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"msg": "手机号已存在!",
+		})
+		return
+	}
 	//todo 生成token
 	token, err := service.Register(param.Phone, param.Password)
 

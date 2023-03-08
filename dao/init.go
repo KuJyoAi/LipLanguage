@@ -2,6 +2,7 @@ package dao
 
 import (
 	"LipLanguage/common"
+	_ "LipLanguage/config"
 	"LipLanguage/model"
 	"fmt"
 	"github.com/go-redis/redis"

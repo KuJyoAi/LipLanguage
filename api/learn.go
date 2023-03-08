@@ -30,7 +30,7 @@ func UploadVideo(ctx *gin.Context) {
 		return
 	}
 
-	token := ctx.GetHeader("auth")
+	token := ctx.PostForm("auth")
 	claim, _ := dao.ParseToken(token)
 
 	res, err := service.UploadVideo(ctx, claim.Phone, int64(VideoID), VideoDataRaw)

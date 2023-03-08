@@ -4,12 +4,13 @@ import (
 	"LipLanguage/service"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 )
 
 func GetResource(ctx *gin.Context) {
-	RawSrcID := ctx.GetHeader("id")
+	RawSrcID := ctx.PostForm("src_id")
 	SrcID, err := strconv.Atoi(RawSrcID)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -20,18 +21,18 @@ func GetResource(ctx *gin.Context) {
 
 	data, err := service.GetResource(uint(SrcID))
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"msg": "内部错误",
-		})
-		return
-	}
-
-	_, err = ctx.Writer.Write(*data)
-	if err != nil {
 		logrus.Errorf("[api.GetResource]%v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"msg": "内部错误",
-		})
-		return
+		if err == gorm.ErrRecordNotFound {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"msg": "没有此资源",
+			})
+			return
+		} else {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"msg":  "内部错误",
+				"data": data,
+			})
+			return
+		}
 	}
 }

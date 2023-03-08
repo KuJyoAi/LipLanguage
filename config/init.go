@@ -3,14 +3,21 @@ package config
 import (
 	"LipLanguage/common"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 func init() {
 	// 设置配置文件路径
-	viper.SetConfigType("yaml")
+	viper.AddConfigPath("../src")
 	viper.SetConfigName("config")
-	viper.SetConfigFile("../src/config")
+	viper.SetConfigType("yaml")
+	// 读取配置文件
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(err)
+	}
+	logrus.Infof("[config.init] inited config")
 
 	common.SrcPath = viper.GetString("SrcPath")
 	common.AIUrl = viper.GetString("AIUrl")

@@ -3,6 +3,10 @@ package common
 import "time"
 
 const (
+	VideoResource    = 1
+	LipVideoResource = 2
+)
+const (
 	JwtExpireTime = 7 * 24 * time.Hour
 	JwtKey        = "HASH256123456"
 )

@@ -6,10 +6,10 @@ import (
 )
 
 func Router(r *gin.Engine) {
+	r.Use(midware.Access)
 	api := r.Group("api")
 	{
 		// 处理跨域问题
-		api.Use(midware.Access)
 		user := api.Group("user")
 		{
 			user.POST("/register", Register)
@@ -23,15 +23,15 @@ func Router(r *gin.Engine) {
 		}
 		learn := api.Group("learn")
 		{
-			learn.POST("/train", midware.Auth, midware.RouterCount, UploadVideo)
-			//learn.GET("/stardres", midware.Auth, midware.RouterCount, GetStandardResource)
+			learn.POST("/train", midware.RouterCount, UploadVideo)
+			learn.POST("/upload", UploadStandardVideo)
 			learn.GET("/get_svideo", midware.Auth, midware.RouterCount)
 			learn.GET("/history", midware.Auth, midware.RouterCount, GetVideoHistory)
 			learn.GET("/today", midware.Auth, midware.RouterCount, GetTodayRecord)
 			learn.GET("/standard", midware.Auth, midware.RouterCount, GetAllStandardVideos)
 			learn.GET("/dayhistory", midware.Auth, midware.RouterCount, GetDayHistory)
 		}
-		api.GET("/resource", midware.Auth, GetResource)
+		api.GET("/resource", midware.Auth, midware.RouterCount, GetResource)
 		//api.POST("/uploadvideo")
 	}
 

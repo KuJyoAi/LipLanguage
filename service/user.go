@@ -29,6 +29,7 @@ func Register(Phone int64, Password string) (string, error) {
 	}
 
 	token, err := dao.GenerateToken(user.Phone, user.Nickname, int64(user.ID))
+
 	if err != nil {
 		logrus.Errorf("[service] Register %v", err)
 		return "", err

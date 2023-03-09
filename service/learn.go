@@ -46,7 +46,7 @@ func UploadVideo(ctx *gin.Context, phone int64, VideoID int64, data *multipart.F
 		if ok {
 			// AI算法出错, 不关后端的事
 			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"msg": err.Error(),
+				"msg": "AI出错",
 			})
 			logrus.Infof("AI Failed:%v time = %v", path, time.Now())
 			ctx.Abort()
@@ -85,7 +85,7 @@ func UploadVideo(ctx *gin.Context, phone int64, VideoID int64, data *multipart.F
 	go func() {
 		// 写文件
 		now := time.Now()
-		path = fmt.Sprintf(common.SrcPath+"/src/user/u%v_v%v_%v-%v-%v-%v-%v-%v.mp4",
+		path = fmt.Sprintf(common.SrcPath+"/src/user/u%v_v%v_%v_%v_%v_%v_%v_%v.mp4",
 			user.ID, VideoID, now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
 		err = os.WriteFile(path, *resp.Data, 0777)
 		if err != nil {
@@ -161,7 +161,7 @@ func GetAllStandardVideos(limit, offset int) ([]model.StandardVideo, error) {
 
 func SaveTrainVideo(ctx *gin.Context, user *model.User, vid int64, data *multipart.FileHeader) (string, error) {
 	now := time.Now()
-	path := fmt.Sprintf(common.SrcPath+"/src/user/u%v_v%v_%v-%v-%v-%v-%v-%v.webm",
+	path := fmt.Sprintf(common.SrcPath+"/src/user/u%v_v%v_%v_%v_%v_%v_%v_%v.webm",
 		user.ID, vid, now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
 	return path, ctx.SaveUploadedFile(data, path)
 }

@@ -24,18 +24,18 @@ type RegisterParam struct {
 }
 
 type LoginParam struct {
-	Nickname string `json:"nickname"`
-	Phone    int64  `json:"phone"`
+	Account  string `json:"account,required"`
 	Password string `json:"password,required"`
 }
 
 type UpdateInfoParam struct {
-	Nickname      string    `json:"nickname"`
-	Name          string    `json:"name"`
-	Email         string    `json:"email"`
-	Birthday      time.Time `json:"birthday"`
-	Gender        int       `json:"gender"`
-	HearingDevice bool      `json:"hearing_device"`
+	Nickname string `json:"nickname"`
+	//AvatarID      string `json:"avatar_id"`
+	Name          string `json:"name"`
+	Email         string `json:"email"`
+	Birthday      string `json:"birthday"`
+	Gender        int    `json:"gender"`
+	HearingDevice bool   `json:"hearing_device"`
 }
 
 type UserVerifyParam struct {

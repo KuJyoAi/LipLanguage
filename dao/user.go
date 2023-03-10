@@ -4,6 +4,7 @@ import (
 	"LipLanguage/model"
 	"errors"
 	"github.com/sirupsen/logrus"
+	"time"
 )
 
 func Register(user *model.User) error {
@@ -37,9 +38,10 @@ func UserInfoUpdate(Phone int64, info *model.UpdateInfoParam) error {
 	user.Nickname = info.Nickname
 	user.Name = info.Name
 	user.Email = info.Email
-	user.BirthDay = info.Birthday
 	user.Gender = info.Gender
 	user.HearingDevice = info.HearingDevice
+	//转换时间 YYYY-MM-DD
+	user.BirthDay, err = time.Parse("2006-01-02", info.Birthday)
 	return DB.Model(model.User{}).Where("id=?", user.ID).Save(user).Error
 }
 func UserExists(Phone int64) bool {

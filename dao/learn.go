@@ -71,8 +71,8 @@ func GetUserTodayStatistics(UserID uint) (model.LearnStatistics, error) {
 		Where("user_id = ?", UserID).
 		Order("created_at desc").
 		Take(&Statistic).Error
-	fmt.Printf("[dao.GetUserTodayStatistics] 查最新的学习数据%+v\n", Statistic)
-
+	//fmt.Printf("[dao.GetUserTodayStatistics] 查最新的学习数据%+v\n", Statistic)
+	logrus.Infof("[dao.GetUserTodayStatistics] User: %v, Get Last Learn Data", UserID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// 用户的第一个数据, 创建
@@ -221,8 +221,7 @@ func PostVideoPath(path string) (model.AiPostResponse, error, bool) {
 			`AI Failed!
 Code: %v
 Status: %v
-ContentLength: %v
-It is NOT Backend's fault!😇😇😇`, resp.StatusCode, resp.Status, resp.ContentLength)), true
+ContentLength: %v`, resp.StatusCode, resp.Status, resp.ContentLength)), true
 	}
 
 	ResPos := 1 //停止位

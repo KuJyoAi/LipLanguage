@@ -31,4 +31,5 @@ func RouterCount(ctx *gin.Context) {
 		Path:   path,
 	}
 	dao.AddRouterCounter(router)
+	logrus.Infof("RouterCount: User:%v, Path:%v", claim.UserID, path)
 }

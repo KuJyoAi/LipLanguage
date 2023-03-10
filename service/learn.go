@@ -15,11 +15,11 @@ import (
 	"time"
 )
 
-func UploadVideo(ctx *gin.Context, phone int64, VideoID int64, data *multipart.FileHeader) (*model.AiPostResponse, error) {
+func UploadVideo(ctx *gin.Context, phone int64, VideoID int64, data *multipart.FileHeader) (*model.AiPostResponse, error, bool) {
 	user, err := dao.GetUserByPhone(phone)
 	if err != nil {
 		logrus.Errorf("[service] UpdateVideo %v", err)
-		return nil, err
+		return nil, err, false
 	}
 	rec := model.LearnRecord{
 		Model:   gorm.Model{},
@@ -33,25 +33,24 @@ func UploadVideo(ctx *gin.Context, phone int64, VideoID int64, data *multipart.F
 	path, err := SaveTrainVideo(ctx, user, VideoID, data)
 	if err != nil {
 		logrus.Errorf("[service.UploadVideo]%v", err)
-		return nil, err
+		return nil, err, false
 	} else {
-		logrus.Infof("Saved File %v time=%v", path, time.Now())
+		logrus.Infof("Saved File:%v time=%v", path, time.Now())
 	}
 
 	// 发送给算法
 	resp, err, ok := dao.PostVideoPath(path)
 	if err != nil {
 		logrus.Errorf("[service.UploadVideo]%v", err)
-
 		if ok {
-			// AI算法出错, 不关后端的事
-			ctx.JSON(http.StatusInternalServerError, gin.H{
+			// AI算法出错
+			logrus.Errorf("AI Failed:%v time = %v", path, time.Now())
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"msg": "AI出错",
 			})
-			logrus.Infof("AI Failed:%v time = %v", path, time.Now())
-			ctx.Abort()
+			return nil, err, true
 		}
-		return nil, err
+		return nil, err, false
 	} else {
 		logrus.Infof("Received File From AI:%v time = %v", path, time.Now())
 	}
@@ -95,7 +94,7 @@ func UploadVideo(ctx *gin.Context, phone int64, VideoID int64, data *multipart.F
 	}()
 
 	wt.Wait()
-	return &resp, nil
+	return &resp, nil, true
 }
 
 // SaveVideoFile 保存视频 ID为视频结果记录的ID
@@ -145,7 +144,7 @@ func GetTodayLearnData(phone int64) (model.LearnStatistics, error) {
 		return model.LearnStatistics{}, err
 	}
 
-	logrus.Infof("[service.GetTodayLearnData] data:%v", data)
+	logrus.Infof("[service.GetTodayLearnData] USER:%v", data.UserID)
 
 	return data, nil
 }

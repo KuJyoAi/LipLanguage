@@ -13,6 +13,8 @@ import (
 func UploadVideo(ctx *gin.Context) {
 	VideoIDRaw := ctx.PostForm("video_id")
 	VideoDataRaw, err := ctx.FormFile("video")
+	logrus.Infof("[api.UploadVideo] name:%v size:%v Header:%v",
+		VideoDataRaw.Filename, VideoDataRaw.Size, VideoDataRaw.Header)
 	if err != nil {
 		logrus.Errorf("[api.UpdateVideo] %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -33,19 +35,26 @@ func UploadVideo(ctx *gin.Context) {
 	token := ctx.PostForm("auth")
 	claim, _ := dao.ParseToken(token)
 
-	res, err := service.UploadVideo(ctx, claim.Phone, int64(VideoID), VideoDataRaw)
+	res, err, ok := service.UploadVideo(ctx, claim.Phone, int64(VideoID), VideoDataRaw)
 	if err != nil {
-		logrus.Errorf("[api.UpdateVideo] %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"msg": "服务器内部错误",
-		})
+		if ok {
+			// ok = true: AI识别错误
+			logrus.Errorf("[api.UpdateVideo] %v", err)
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"msg": "AI错误",
+			})
+		} else {
+			// ok = false: 后端错误
+			logrus.Errorf("[api.UpdateVideo] %v", err)
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"msg": "后端错误",
+			})
+		}
 		return
 	} else {
 		ctx.JSON(http.StatusOK, gin.H{
-			"msg": "上传成功",
-			"data": gin.H{
-				"result": res,
-			},
+			"msg":  "上传成功",
+			"data": res,
 		})
 		return
 	}

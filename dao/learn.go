@@ -76,7 +76,6 @@ func GetUserTodayStatistics(UserID uint) (model.LearnStatistics, error) {
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			// 用户的第一个数据, 创建
-			fmt.Println("创建第一个数据")
 			Statistic = model.LearnStatistics{
 				Model:        gorm.Model{},
 				UserID:       UserID,
@@ -89,6 +88,8 @@ func GetUserTodayStatistics(UserID uint) (model.LearnStatistics, error) {
 				Today:        time.Now(),
 			}
 			err = DB.Model(model.LearnStatistics{}).Save(&Statistic).Error
+			//fmt.Println("Today's First Data")
+			logrus.Infof("[dao.GetUserTodayStatistics] User: %v, Today's First Data", UserID)
 		} else {
 			// 未找到之外的其他错误
 			logrus.Errorf("[dao.GetUserTodayStatistics] %v", err)
@@ -98,7 +99,8 @@ func GetUserTodayStatistics(UserID uint) (model.LearnStatistics, error) {
 		// 查到上一次数据, 需要先比较是否为今天的, 不是则创建
 		if !util.SameDay(Statistic.Today, time.Now()) {
 			Statistic, err = CreateTodayStatistics(UserID, Statistic)
-			fmt.Printf("[dao.GetUserTodayStatistics]不是同一天, 创建\n")
+			//fmt.Printf("[dao.GetUserTodayStatistics]不是同一天, 创建\n")
+			logrus.Infof("[dao.GetUserTodayStatistics] User: %v, Not Same Day, Create", UserID)
 			if err != nil {
 				return Statistic, err
 			}
@@ -152,7 +154,8 @@ func UpdateStatisticTime(statistics model.LearnStatistics, UserID uint) (model.L
 		return model.LearnStatistics{}, err
 	}
 
-	fmt.Printf("[dao.UpdateStatisticTime] 寻找上一次的统计记录: %+v", counter)
+	fmt.Printf("[dao.UpdateStatisticTime] User: %v, Num of LastRecords: %+v",
+		UserID, len(counter))
 
 	// 不足两个记录, 不需要更新
 	if len(counter) < 2 {

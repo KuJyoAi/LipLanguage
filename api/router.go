@@ -6,10 +6,9 @@ import (
 )
 
 func Router(r *gin.Engine) {
-	r.Use(midware.Access)
+	r.Use(midware.CORS) // 处理跨域问题
 	api := r.Group("api")
 	{
-		// 处理跨域问题
 		user := api.Group("user")
 		{
 			user.POST("/register", Register)

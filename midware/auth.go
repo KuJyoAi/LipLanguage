@@ -44,8 +44,8 @@ func Auth(ctx *gin.Context) {
 	}
 }
 
-// Access 跨域问题
-func Access(context *gin.Context) {
+// CORS 跨域问题
+func CORS(context *gin.Context) {
 	method := context.Request.Method
 	// 1. [必须]接受指定域的请求，可以使用*不加以限制，但不安全
 	//context.Header("Access-Control-Allow-Origin", "*")

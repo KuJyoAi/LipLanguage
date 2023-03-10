@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"net/http"
+	"time"
 )
 
 // RouterCount 统计路由调用
@@ -32,4 +33,10 @@ func RouterCount(ctx *gin.Context) {
 	}
 	dao.AddRouterCounter(router)
 	logrus.Infof("RouterCount: User:%v, Path:%v", claim.UserID, path)
+	// 添加计时器
+	start := time.Now()
+	ctx.Next()
+	// 计算耗时
+	cost := time.Since(start)
+	logrus.Infof("RouterCount: User:%v, Path:%v, Cost:%v", claim.UserID, path, cost)
 }

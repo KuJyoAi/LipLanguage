@@ -44,17 +44,15 @@ func UploadVideo(ctx *gin.Context, phone int64, VideoID int64, data *multipart.F
 		logrus.Errorf("[service.UploadVideo]%v", err)
 		if ok {
 			// AI算法出错
-			logrus.Errorf("AI Failed:%v time = %v", path, time.Now())
+			logrus.Errorf("AI Failed = %v time = %v", path, time.Now())
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"msg": "AI出错",
 			})
 			return nil, err, true
 		}
 		return nil, err, false
-	} else {
-		logrus.Infof("Received File From AI:%v time = %v", path, time.Now())
 	}
-
+	logrus.Infof("AI Result=%v time=%v, data_length=%v bytes", resp.Result, time.Now(), len(*resp.Data))
 	// 保存记录, 并传回前端
 	wt := sync.WaitGroup{}
 	wt.Add(2)
@@ -84,7 +82,7 @@ func UploadVideo(ctx *gin.Context, phone int64, VideoID int64, data *multipart.F
 	go func() {
 		// 写文件
 		now := time.Now()
-		path = fmt.Sprintf(common.SrcPath+"/src/user/u%v_v%v_%v_%v_%v_%v_%v_%v.mp4",
+		path = fmt.Sprintf(common.SrcPath+"/src/user/u%v_v%v_%v_%v_%v_%v_%v_%v.webm",
 			user.ID, VideoID, now.Year(), now.Month(), now.Day(), now.Hour(), now.Minute(), now.Second())
 		err = os.WriteFile(path, *resp.Data, 0777)
 		if err != nil {

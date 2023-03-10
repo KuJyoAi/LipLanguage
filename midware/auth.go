@@ -63,7 +63,7 @@ func CORS(context *gin.Context) {
 	context.Header("Access-Control-Allow-Credentials", "true")
 	// 6. 放行所有OPTIONS方法
 	if method == "OPTIONS" {
-		context.AbortWithStatus(http.StatusOK)
+		context.AbortWithStatus(http.StatusNoContent)
 	}
 	context.Next()
 }

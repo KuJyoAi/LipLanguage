@@ -10,8 +10,11 @@ import (
 	"gorm.io/gorm"
 	"io"
 	"net/http"
+	"sync"
 	"time"
 )
+
+var AiLock sync.Mutex
 
 func GetStandardVideo(ID int64) (model.StandardVideo, error) {
 	ret := model.StandardVideo{}
@@ -191,6 +194,9 @@ func GetAllStandardVideos(limit int, offset int) (*[]model.StandardVideo, error)
 
 // PostVideoPath 把视频文件post过去, 发送路径
 func PostVideoPath(path string) (model.AiPostResponse, error, bool) {
+	// 加锁防止AI被高并发请求
+	AiLock.Lock()
+	defer AiLock.Unlock()
 	// 请求部分
 	URL := common.AIUrl + "?VideoPath=" + path
 	request, err := http.NewRequest("GET", URL, nil)
@@ -245,7 +251,7 @@ ContentLength: %v`, resp.StatusCode, resp.Status, resp.ContentLength)), true
 	}
 
 	logrus.Infof(`[util.PostVideoPath] AI Response:
-data[1]: %v ResLen:%v result_len:%v`, data[1], ResLen, len(ret.Result))
+data[1]: %d ResLen:%v result_len:%v`, data[1], len(Res), len(ret.Result))
 	return ret, nil, true
 }
 

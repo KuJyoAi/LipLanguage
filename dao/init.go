@@ -42,4 +42,5 @@ func init() {
 		logrus.Panicf("[dao.init] database connect %v", err)
 	}
 	logrus.Infof("[dao.init] Connected to redis")
+
 }

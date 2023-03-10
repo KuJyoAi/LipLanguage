@@ -224,17 +224,15 @@ Status: %v
 ContentLength: %v`, resp.StatusCode, resp.Status, resp.ContentLength)), true
 	}
 
-	ResPos := 1 //停止位
-	for ; ResPos < len(data)-3; ResPos++ {
-		if data[ResPos] == 0 && data[ResPos+1] == 0 && data[ResPos+2] == 0 {
-			break
-		}
-	}
-	video := data[ResPos:] //使用utf-8编码 长度*3为字节数
+	data[0] = 0            //去掉第一个字节
+	ResLen := int(data[1]) //第二个字节为字数, 使用UTF-8编码
+	data = data[ResLen*3+2:]
 	ret := model.AiPostResponse{
-		Result: string(data[1:ResPos]),
-		Data:   &video,
+		Result: string(data[2 : ResLen*3+2]),
+		Data:   &data,
 	}
+	logrus.Infof(`[util.PostVideoPath] AI Response:
+data[1]: %v ResLen:%v result:%v`, data[0], ResLen, ret.Result)
 	return ret, nil, true
 }
 

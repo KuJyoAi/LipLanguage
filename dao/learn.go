@@ -224,15 +224,28 @@ Status: %v
 ContentLength: %v`, resp.StatusCode, resp.Status, resp.ContentLength)), true
 	}
 
-	data[0] = 0            //去掉第一个字节
-	ResLen := int(data[1]) //第二个字节为字数, 使用UTF-8编码
-	data = data[ResLen*3+2:]
+	// 数据格式: 00 00 结果 视频数据
+	data[0] = 0    //去掉第一个字节
+	data[1] = 0x0A //去掉第二个字节
+	DataStart := 1 //数据开始位置
+	//webm: 1A 45 DF A3
+	//查找数据开始位置
+	for i := 0; i < len(data)-4; i++ {
+		if data[i] == 0x1A && data[i+1] == 0x45 && data[i+2] == 0xDF && data[i+3] == 0xA3 {
+			DataStart = i
+			break
+		}
+	}
+	// 获取数据
+	Res := data[2:DataStart]
+	data = data[DataStart:]
 	ret := model.AiPostResponse{
-		Result: string(data[2 : ResLen*3+2]),
+		Result: string(Res),
 		Data:   &data,
 	}
+
 	logrus.Infof(`[util.PostVideoPath] AI Response:
-data[1]: %v ResLen:%v result:%v`, data[0], ResLen, ret.Result)
+data[1]: %v ResLen:%v result_len:%v`, data[1], ResLen, len(ret.Result))
 	return ret, nil, true
 }
 

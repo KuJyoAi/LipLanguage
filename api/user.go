@@ -15,6 +15,14 @@ func Register(ctx *gin.Context) {
 	param := model.RegisterParam{}
 	err := ctx.ShouldBindJSON(&param)
 	logrus.Infof("Register %v", param)
+	// 验证手机号合法性
+	StrPhone := string(param.Phone)
+	if StrPhone[0] != '1' || len(StrPhone) != 11 {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"msg": "手机号不合法",
+		})
+		return
+	}
 	if err != nil {
 		logrus.Errorf("[api] Register Bind Json %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{

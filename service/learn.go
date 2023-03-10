@@ -9,7 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"mime/multipart"
-	"net/http"
 	"os"
 	"sync"
 	"time"
@@ -45,9 +44,6 @@ func UploadVideo(ctx *gin.Context, phone int64, VideoID int64, data *multipart.F
 		if ok {
 			// AI算法出错
 			logrus.Errorf("AI Failed = %v time = %v", path, time.Now())
-			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"msg": "AI出错",
-			})
 			return nil, err, true
 		}
 		return nil, err, false

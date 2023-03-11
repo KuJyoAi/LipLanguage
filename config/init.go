@@ -49,4 +49,5 @@ Redis:
 `, common.SrcPath, common.AIUrl,
 		common.MySqlDatabase, common.MySqlUsername, common.MySqlPassword, common.MysqlIpaddr, common.MysqlPort,
 		common.RedisIpaddr, common.RedisPassword, common.RedisPort)
+
 }

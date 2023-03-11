@@ -8,13 +8,14 @@ import (
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func UploadVideo(ctx *gin.Context) {
 	VideoIDRaw := ctx.PostForm("video_id")
 	VideoDataRaw, err := ctx.FormFile("video")
-	logrus.Infof("[api.UploadVideo] name:%v size:%v Header:%v",
-		VideoDataRaw.Filename, VideoDataRaw.Size, VideoDataRaw.Header)
+	logrus.Infof("[api.UploadVideo] From frontend:\nname:%v size:%v Header:%v\n time=%v",
+		VideoDataRaw.Filename, VideoDataRaw.Size, VideoDataRaw.Header, time.Now())
 	if err != nil {
 		logrus.Errorf("[api.UpdateVideo] %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -36,6 +37,8 @@ func UploadVideo(ctx *gin.Context) {
 	claim, _ := dao.ParseToken(token)
 
 	res, err, ok := service.UploadVideo(ctx, claim.Phone, int64(VideoID), VideoDataRaw)
+	logrus.Infof("[api.UploadVideo] Send to backend:\n err:%v ok:%v\n time=%v",
+		err, ok, time.Now())
 	if err != nil {
 		if ok {
 			// ok = true: AI识别错误

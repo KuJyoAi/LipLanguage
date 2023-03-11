@@ -27,8 +27,8 @@ func UploadVideo(ctx *gin.Context, phone int64, VideoID int64, data *multipart.F
 		VideoID: VideoID,
 		Right:   false,
 	}
-
 	// 保存文件到本地
+	logrus.Infof("Saving File: name=%v, time=%v", data.Filename, time.Now())
 	path, err := SaveTrainVideo(ctx, user, VideoID, data)
 	if err != nil {
 		logrus.Errorf("[service.UploadVideo]%v", err)
@@ -36,8 +36,10 @@ func UploadVideo(ctx *gin.Context, phone int64, VideoID int64, data *multipart.F
 	} else {
 		logrus.Infof("Saved File:%v time=%v", path, time.Now())
 	}
+	logrus.Infof("Saved File:%v time=%v", path, time.Now())
 
 	// 发送给算法
+	logrus.Infof("Sending File to AI: path=%v, time=%v", path, time.Now())
 	resp, err, ok := dao.PostVideoPath(path)
 	if err != nil {
 		logrus.Errorf("[service.UploadVideo]%v", err)
@@ -72,6 +74,7 @@ func UploadVideo(ctx *gin.Context, phone int64, VideoID int64, data *multipart.F
 		if err != nil {
 			logrus.Errorf("[service] UpdateVideo %v", err)
 		}
+		logrus.Infof("Saved Record time=%v", time.Now())
 		wt.Done()
 	}()
 
@@ -84,6 +87,7 @@ func UploadVideo(ctx *gin.Context, phone int64, VideoID int64, data *multipart.F
 		if err != nil {
 			logrus.Errorf("[service] UpdateVideo %v", err)
 		}
+		logrus.Infof("Saved Lip Video time=%v", time.Now())
 		wt.Done()
 	}()
 

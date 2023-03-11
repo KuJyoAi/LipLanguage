@@ -27,4 +27,4 @@ func initFile() {
 	}
 	// 使用gin的debug写入
 	gin.DefaultWriter = io.MultiWriter(f)
-}g
+}

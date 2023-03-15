@@ -39,17 +39,17 @@ type UpdateInfoParam struct {
 }
 
 type UserVerifyParam struct {
-	Phone int64  `json:"phone,omitempty"`
+	Phone string `json:"phone,omitempty"`
 	Email string `json:"email,omitempty"`
 	Name  string `json:"name,omitempty"`
 }
 
 type ResetPasswordParam struct {
-	Phone    int64  `json:"phone,omitempty"`
+	Phone    string `json:"phone,omitempty"`
 	Password string `json:"password,omitempty"`
 }
 type UpdatePhoneParam struct {
-	Phone int64 `json:"phone,omitempty"`
+	Phone string `json:"phone,omitempty"`
 }
 
 type UpdatePasswordParam struct {

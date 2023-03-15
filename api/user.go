@@ -16,7 +16,7 @@ func Register(ctx *gin.Context) {
 	err := ctx.ShouldBindJSON(&param)
 	logrus.Infof("Register %v", param)
 	// 验证手机号合法性
-	if param.Phone[0] != '1' || len(param.Phone) != 11 {
+	if len(param.Phone) != 11 || param.Phone[0] != '1' {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"msg": "手机号不合法",
 		})
@@ -114,6 +114,7 @@ func ResetPassword(ctx *gin.Context) {
 	param := model.ResetPasswordParam{}
 	err := ctx.ShouldBindJSON(&param)
 	logrus.Infof("[api.ResetPassword] %v", param)
+	NumPhone, err := strconv.Atoi(param.Phone)
 	if err != nil {
 		logrus.Errorf("[api.UserVerify] %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -122,12 +123,12 @@ func ResetPassword(ctx *gin.Context) {
 		return
 	}
 
-	if service.UserResetPassword(param.Phone, param.Password) {
+	if service.UserResetPassword(int64(NumPhone), param.Password) {
 		ctx.JSON(http.StatusOK, gin.H{
 			"msg": "重置成功",
 		})
 		//重置成功, 删除掉redis里的token, 防止重放攻击
-		dao.DeleteRedisToken(param.Phone)
+		dao.DeleteRedisToken(int64(NumPhone))
 		return
 	} else {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -174,8 +175,8 @@ func UserVerify(ctx *gin.Context) {
 		})
 		return
 	}
-
-	token, ok := service.UserVerify(param.Phone, param.Name, param.Email)
+	NumPhone, err := strconv.Atoi(param.Phone)
+	token, ok := service.UserVerify(int64(NumPhone), param.Name, param.Email)
 	if ok {
 		ctx.JSON(http.StatusOK, gin.H{
 			"msg": "验证成功",
@@ -203,9 +204,9 @@ func UserUpdatePhone(ctx *gin.Context) {
 		})
 		return
 	}
-
+	NumPhone, err := strconv.Atoi(param.Phone)
 	token := ctx.GetHeader("auth")
-	if service.UserUpdatePhone(token, param.Phone) {
+	if service.UserUpdatePhone(token, int64(NumPhone)) {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"msg": "改绑成功",
 		})

@@ -16,13 +16,13 @@ func Register(ctx *gin.Context) {
 	err := ctx.ShouldBindJSON(&param)
 	logrus.Infof("Register %v", param)
 	// 验证手机号合法性
-	StrPhone := string(param.Phone)
-	if StrPhone[0] != '1' || len(StrPhone) != 11 {
+	if param.Phone[0] != '1' || len(param.Phone) != 11 {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"msg": "手机号不合法",
 		})
 		return
 	}
+	NumPhone, err := strconv.Atoi(param.Phone)
 	if err != nil {
 		logrus.Errorf("[api] Register Bind Json %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -30,14 +30,14 @@ func Register(ctx *gin.Context) {
 		})
 		return
 	}
-	if dao.UserExists(param.Phone) {
+	if dao.UserExists(int64(NumPhone)) {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"msg": "手机号已存在!",
 		})
 		return
 	}
 	//todo 生成token
-	token, err := service.Register(param.Phone, param.Password)
+	token, err := service.Register(int64(NumPhone), param.Password)
 
 	if err != nil {
 		logrus.Errorf("[api.Register] %v", err)

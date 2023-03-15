@@ -19,7 +19,7 @@ type User struct {
 }
 
 type RegisterParam struct {
-	Phone    int64  `json:"phone"`
+	Phone    string `json:"phone"`
 	Password string `json:"password"`
 }
 

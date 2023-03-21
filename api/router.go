@@ -32,5 +32,6 @@ func Router(r *gin.Engine) {
 		}
 		api.POST("/resource", midware.Auth, midware.RouterCount, GetResource)
 	}
+	r.GET("/", ReturnIndex)
 
 }

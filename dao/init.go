@@ -18,8 +18,9 @@ func init() {
 	var err error
 	//连接MySQL
 	dsn := fmt.Sprintf(
-		"%v:%v@tcp(%v:%v)/liplanguage?charset=utf8mb4&parseTime=True&loc=Local",
-		common.MySqlUsername, common.MySqlPassword, common.MysqlIpaddr, common.MysqlPort)
+		"%v:%v@tcp(%v:%v)/%v?charset=utf8mb4&parseTime=True&loc=Local",
+		common.MySqlUsername, common.MySqlPassword,
+		common.MysqlIpaddr, common.MysqlPort, common.MySqlDatabase)
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		logrus.Panicf("[dao.init] database connect %v", err)

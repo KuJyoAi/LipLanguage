@@ -7,5 +7,5 @@ import (
 
 func ReturnIndex(c *gin.Context) {
 	fmt.Println("INDEX")
-	c.HTML(200, "html/index.html", gin.H{})
+	c.HTML(200, "index.html", gin.H{})
 }

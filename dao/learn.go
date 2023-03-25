@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 	"io"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 )
@@ -197,22 +198,40 @@ func PostVideoPath(path string) (model.AiPostResponse, error, bool) {
 	// 加锁防止AI被高并发请求
 	AiLock.Lock()
 	defer AiLock.Unlock()
+
 	// 请求部分
-	URL := common.AIUrl + "?VideoPath=" + path
-	request, err := http.NewRequest("GET", URL, nil)
+	URL := common.AIUrl
+	// 读取文件
+	file, err := os.Open(path)
+	if err != nil {
+		logrus.Errorf("[util.PostVideoPath] %v", err)
+		return model.AiPostResponse{}, err, false
+	}
+	defer file.Close()
+
+	// 创建请求
+	request, err := http.NewRequest("POST", URL, file)
 	if err != nil {
 		logrus.Errorf("[util.PostVideoPath] %v", err)
 		return model.AiPostResponse{}, err, false
 	}
 	request.Header.Set("Connection", "Keep-Alive")
 	var resp *http.Response
+
 	resp, err = http.DefaultClient.Do(request)
 	if err != nil {
 		logrus.Errorf("[util.PostVideoPath] %v", err)
 		return model.AiPostResponse{}, err, false
 	}
+
 	// 读取返回
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			logrus.Errorf("[util.PostVideoPath] %v", err)
+		}
+	}(resp.Body)
+
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		logrus.Errorf("[util.PostVideoPath] %v", err)
@@ -242,6 +261,7 @@ ContentLength: %v`, resp.StatusCode, resp.Status, resp.ContentLength)), true
 			break
 		}
 	}
+	
 	// 获取数据
 	Res := data[2:DataStart]
 	data = data[DataStart:]

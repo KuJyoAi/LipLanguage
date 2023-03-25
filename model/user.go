@@ -28,6 +28,18 @@ type LoginParam struct {
 	Password string `json:"password,required"`
 }
 
+type LoginResponse struct {
+	Token         string `json:"token"`
+	Name          string `json:"username"`
+	Nickname      string `json:"nickname"`
+	AvatarUrl     string `json:"avatar_url"`
+	Phone         string `json:"phone"`
+	Email         string `json:"email"`
+	UserID        uint   `json:"user_id"`
+	HearingDevice bool   `json:"hearing_device"`
+	Gender        int    `json:"gender"`
+	BirthDay      string `gorm:"birthday"`
+}
 type UpdateInfoParam struct {
 	Nickname string `json:"nickname"`
 	//AvatarID      string `json:"avatar_id"`

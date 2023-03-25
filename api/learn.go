@@ -37,6 +37,7 @@ func UploadVideo(ctx *gin.Context) {
 	claim, _ := dao.ParseToken(token)
 
 	res, err, ok := service.UploadVideo(ctx, claim.Phone, int64(VideoID), VideoDataRaw)
+
 	logrus.Infof("[api.UploadVideo] Send to backend:\n err:%v ok:%v\n time=%v",
 		err, ok, time.Now())
 	if err != nil {

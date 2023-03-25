@@ -32,6 +32,8 @@ func Router(r *gin.Engine) {
 		}
 		api.POST("/resource", midware.Auth, midware.RouterCount, GetResource)
 	}
-	r.GET("/", ReturnIndex)
 
+	// 测试页面
+	r.GET("/", ReturnIndex)
+	r.LoadHTMLGlob("html/*")
 }

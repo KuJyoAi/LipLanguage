@@ -12,7 +12,7 @@ func main() {
 	r := gin.Default()
 	api.Router(r)
 	r.LoadHTMLFiles("html/index.html")
-	r.Run(":8081")
+	r.Run()
 }
 
 // 初始化日志

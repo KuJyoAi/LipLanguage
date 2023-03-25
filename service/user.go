@@ -4,6 +4,7 @@ import (
 	"LipLanguage/dao"
 	"LipLanguage/model"
 	"errors"
+	"fmt"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"time"
@@ -39,25 +40,36 @@ func Register(Phone int64, Password string) (string, error) {
 	return token, err
 }
 
-func LoginByPhone(Phone int64, Password string) (string, error) {
+func LoginByPhone(Phone int64, Password string) (model.LoginResponse, error) {
 	user, err := dao.GetUserByPhone(Phone)
 	if err != nil {
 		logrus.Errorf("[service.Login] %v", err)
-		return "", err
+		return model.LoginResponse{}, err
 	}
 
 	if dao.Hash256(Password) != user.Password {
 		logrus.Errorf("[service.Login] %v", err)
-		return "", errors.New("PasswordError")
+		return model.LoginResponse{}, errors.New("PasswordError")
 	}
 
 	token, err := dao.GenerateToken(user.Phone, user.Nickname, int64(user.ID))
 	if err != nil {
 		logrus.Errorf("[service.Login] %v", err)
-		return "", err
+		return model.LoginResponse{}, err
 	}
-
-	return token, err
+	birthDay := user.BirthDay.Format("2006-01-02")
+	res := model.LoginResponse{
+		Token:         token,
+		AvatarUrl:     user.AvatarUrl,
+		Phone:         fmt.Sprintf("%d", user.Phone),
+		Email:         user.Email,
+		Name:          user.Name,
+		HearingDevice: user.HearingDevice,
+		Gender:        user.Gender,
+		BirthDay:      birthDay,
+		UserID:        user.ID,
+	}
+	return res, err
 }
 
 func LoginByNickname(Nickname string, Password string) (string, error) {

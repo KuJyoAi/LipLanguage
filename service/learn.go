@@ -27,6 +27,7 @@ func UploadVideo(ctx *gin.Context, phone int64, VideoID int64, data *multipart.F
 		VideoID: VideoID,
 		Right:   false,
 	}
+
 	// 保存文件到本地
 	logrus.Infof("Saving File: name=%v, time=%v", data.Filename, time.Now())
 	path, err := SaveTrainVideo(ctx, user, VideoID, data)

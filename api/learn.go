@@ -14,8 +14,6 @@ import (
 func UploadVideo(ctx *gin.Context) {
 	VideoIDRaw := ctx.PostForm("video_id")
 	VideoDataRaw, err := ctx.FormFile("video")
-	logrus.Infof("[api.UploadVideo] From frontend:\nname:%v size:%v Header:%v\n time=%v",
-		VideoDataRaw.Filename, VideoDataRaw.Size, VideoDataRaw.Header, time.Now())
 	if err != nil {
 		logrus.Errorf("[api.UpdateVideo] %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -23,6 +21,8 @@ func UploadVideo(ctx *gin.Context) {
 		})
 		return
 	}
+	logrus.Infof("[api.UploadVideo] From frontend:\nname:%v size:%v Header:%v\n time=%v",
+		VideoDataRaw.Filename, VideoDataRaw.Size, VideoDataRaw.Header, time.Now())
 
 	VideoID, err := strconv.Atoi(VideoIDRaw)
 	if err != nil {

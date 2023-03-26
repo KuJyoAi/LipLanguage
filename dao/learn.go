@@ -204,7 +204,7 @@ func PostVideoPath(path string) (model.AiPostResponse, error, bool) {
 	// 读取文件
 	file, err := os.Open(path)
 	if err != nil {
-		logrus.Errorf("[util.PostVideoPath] %v", err)
+		logrus.Errorf("[util.PostVideoPath] fileread %v", err)
 		return model.AiPostResponse{}, err, false
 	}
 	defer file.Close()
@@ -261,7 +261,7 @@ ContentLength: %v`, resp.StatusCode, resp.Status, resp.ContentLength)), true
 			break
 		}
 	}
-	
+
 	// 获取数据
 	Res := data[2:DataStart]
 	data = data[DataStart:]

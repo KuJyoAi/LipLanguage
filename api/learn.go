@@ -3,7 +3,7 @@ package api
 import (
 	"LipLanguage/dao"
 	"LipLanguage/model"
-	"LipLanguage/service"
+	"LipLanguage/service/learn"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -14,8 +14,10 @@ import (
 func UploadVideo(ctx *gin.Context) {
 	VideoIDRaw := ctx.PostForm("video_id")
 	VideoDataRaw, err := ctx.FormFile("video")
+
 	if err != nil {
 		logrus.Errorf("[api.UpdateVideo] %v", err)
+		Response(ctx, http.StatusBadRequest, "视频错误", nil)
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"msg": "视频错误",
 		})
@@ -27,16 +29,14 @@ func UploadVideo(ctx *gin.Context) {
 	VideoID, err := strconv.Atoi(VideoIDRaw)
 	if err != nil {
 		logrus.Errorf("[api.UpdateVideo] %v", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"msg": "参数非法",
-		})
+		Response(ctx, http.StatusBadRequest, "参数错误", nil)
 		return
 	}
 
 	token := ctx.PostForm("auth")
 	claim, _ := dao.ParseToken(token)
 
-	res, err, ok := service.UploadVideo(ctx, claim.Phone, int64(VideoID), VideoDataRaw)
+	res, err, ok := learn.UploadVideo(ctx, claim.Phone, int64(VideoID), VideoDataRaw)
 
 	logrus.Infof("[api.UploadVideo] Send to backend:\n err:%v ok:%v\n time=%v",
 		err, ok, time.Now())
@@ -44,22 +44,15 @@ func UploadVideo(ctx *gin.Context) {
 		if ok {
 			// ok = true: AI识别错误
 			logrus.Errorf("[api.UpdateVideo] %v", err)
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"msg": "AI错误",
-			})
+			Response(ctx, http.StatusBadRequest, "AI识别错误", nil)
 		} else {
 			// ok = false: 后端错误
 			logrus.Errorf("[api.UpdateVideo] %v", err)
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"msg": "后端错误",
-			})
+			Response(ctx, http.StatusInternalServerError, "内部错误", nil)
 		}
 		return
 	} else {
-		ctx.JSON(http.StatusOK, gin.H{
-			"msg":  "上传成功",
-			"data": res,
-		})
+		Response(ctx, http.StatusOK, "上传成功", res)
 		return
 	}
 }
@@ -68,48 +61,37 @@ func GetVideoHistory(ctx *gin.Context) {
 	LimitRaw := ctx.Query("limit")
 	OffsetRaw := ctx.Query("offset")
 	VideoIDRaw := ctx.Query("video_id")
+
 	Limit, err1 := strconv.Atoi(LimitRaw)
 	Offset, err2 := strconv.Atoi(OffsetRaw)
 	VideoID, err3 := strconv.Atoi(VideoIDRaw)
 	if err1 != nil || err2 != nil || err3 != nil {
 		logrus.Errorf("[api.GetVideoHistory] %v %v %v", err1, err2, err3)
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"msg": "参数非法",
-		})
+		Response(ctx, http.StatusBadRequest, "参数错误", nil)
 		return
 	}
 
-	data, err := service.GetVideoHistory(int64(VideoID), Offset, Limit)
+	data, err := learn.GetVideoHistory(int64(VideoID), Offset, Limit)
 	if err != nil {
 		logrus.Errorf("[api.GetVideoHistory] %v %v %v", err1, err2, err3)
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"msg": "内部错误",
-		})
+		Response(ctx, http.StatusInternalServerError, "内部错误", nil)
 		return
+	} else {
+		Response(ctx, http.StatusOK, "请求成功", data)
 	}
-
-	ctx.JSON(http.StatusOK, gin.H{
-		"msg":  "请求成功",
-		"data": data,
-	})
 }
 
 func GetTodayRecord(ctx *gin.Context) {
 	token := ctx.GetHeader("auth")
 	claim, _ := dao.ParseToken(token)
-	data, err := service.GetTodayLearnData(claim.Phone)
+	data, err := learn.GetTodayLearnData(claim.Phone)
 	if err != nil {
 		logrus.Errorf("[api.GetTodayRecord] %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"msg": "内部错误",
-		})
+		Response(ctx, http.StatusInternalServerError, "内部错误", nil)
 		return
+	} else {
+		Response(ctx, http.StatusOK, "请求成功", data)
 	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"msg":  "请求成功",
-		"data": data,
-	})
-
 }
 
 func GetAllStandardVideos(ctx *gin.Context) {
@@ -119,28 +101,20 @@ func GetAllStandardVideos(ctx *gin.Context) {
 	Offset, err2 := strconv.Atoi(OffsetRaw)
 	if err1 != nil || err2 != nil {
 		logrus.Errorf("[api.GetVideoHistory] %v %v", err1, err2)
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"msg": "参数非法",
-		})
+		Response(ctx, http.StatusBadRequest, "参数错误", nil)
 		return
 	}
 
-	data, err := service.GetAllStandardVideos(Limit, Offset)
+	data, err := learn.GetAllStandardVideos(Limit, Offset)
 	if err != nil {
 		logrus.Errorf("[api.GetAllStandardVideos] %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"msg": "内部错误",
-		})
+		Response(ctx, http.StatusInternalServerError, "内部错误", nil)
 		return
 	} else {
 		if data == nil {
 			data = make([]model.StandardVideo, 0)
 		}
-
-		ctx.JSON(http.StatusOK, gin.H{
-			"msg":  "请求成功",
-			"data": data,
-		})
+		Response(ctx, http.StatusOK, "请求成功", data)
 	}
 }
 
@@ -151,28 +125,20 @@ func GetDayHistory(ctx *gin.Context) {
 	Offset, err2 := strconv.Atoi(OffsetRaw)
 	if err1 != nil || err2 != nil {
 		logrus.Errorf("[api.GetVideoHistory] %v %v", err1, err2)
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"msg": "参数非法",
-		})
+		Response(ctx, http.StatusBadRequest, "参数错误", nil)
 		return
 	}
 	token := ctx.GetHeader("auth")
 	claim, _ := dao.ParseToken(token)
-	data, err := service.GetDayHistory(Limit, Offset, claim.UserID)
+	data, err := learn.GetDayHistory(Limit, Offset, claim.UserID)
 	if err != nil {
 		logrus.Errorf("[api.GetAllStandardVideos] %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"msg": "内部错误",
-		})
+		Response(ctx, http.StatusInternalServerError, "内部错误", nil)
 		return
 	} else {
 		if data == nil {
 			data = make([]model.LearnStatistics, 0)
 		}
-
-		ctx.JSON(http.StatusOK, gin.H{
-			"msg":  "请求成功",
-			"data": data,
-		})
+		Response(ctx, http.StatusOK, "请求成功", data)
 	}
 }

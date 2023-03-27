@@ -43,9 +43,3 @@ type LearnStatistics struct {
 	TotalTime    int  `gorm:"total_time"`
 	Today        time.Time
 }
-
-// AiPostResponse AI算法传回来的数据
-type AiPostResponse struct {
-	Result string
-	Data   *[]byte
-}

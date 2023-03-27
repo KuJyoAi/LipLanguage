@@ -32,6 +32,7 @@ func init() {
 		&model.StandardVideo{},
 		&model.Resource{},
 		&model.RouterCounter{})
+
 	//连接Redis
 	RDB = redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%v:%v", common.RedisIpaddr, common.RedisPort),

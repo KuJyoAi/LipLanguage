@@ -2,6 +2,7 @@ package midware
 
 import (
 	"LipLanguage/dao"
+	"LipLanguage/dao/user"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -28,7 +29,7 @@ func Auth(ctx *gin.Context) {
 		return
 	}
 	//检查用户是否存在
-	if !dao.UserExists(claims.Phone) {
+	if !user.Exists(claims.Phone) {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
 			"msg": "token无效",
 		})

@@ -2,6 +2,7 @@ package service
 
 import (
 	"LipLanguage/dao"
+	"LipLanguage/dao/user"
 	"LipLanguage/model"
 	"errors"
 	"fmt"
@@ -12,7 +13,7 @@ import (
 
 func Register(Phone int64, Password string) (string, error) {
 
-	user := model.User{
+	User := model.User{
 		Model:         gorm.Model{},
 		AvatarUrl:     "",
 		Phone:         Phone,
@@ -24,16 +25,16 @@ func Register(Phone int64, Password string) (string, error) {
 		BirthDay:      time.Date(2050, 1, 1, 0, 0, 0, 0, time.UTC),
 	}
 
-	err := dao.Register(&user)
+	err := user.Create(&User)
 	if err != nil {
-		logrus.Errorf("[service] Register %v", err)
+		logrus.Errorf("[service] Create %v", err)
 		return "", err
 	}
 
-	token, err := dao.GenerateToken(user.Phone, user.Nickname, int64(user.ID))
+	token, err := dao.GenerateToken(User.Phone, User.Nickname, int64(User.ID))
 
 	if err != nil {
-		logrus.Errorf("[service] Register %v", err)
+		logrus.Errorf("[service] Create %v", err)
 		return "", err
 	}
 
@@ -41,67 +42,67 @@ func Register(Phone int64, Password string) (string, error) {
 }
 
 func LoginByPhone(Phone int64, Password string) (model.LoginResponse, error) {
-	user, err := dao.GetUserByPhone(Phone)
+	User, err := user.GetByPhone(Phone)
 	if err != nil {
 		logrus.Errorf("[service.Login] %v", err)
 		return model.LoginResponse{}, err
 	}
 
-	if dao.Hash256(Password) != user.Password {
+	if dao.Hash256(Password) != User.Password {
 		logrus.Errorf("[service.Login] %v", err)
 		return model.LoginResponse{}, errors.New("PasswordError")
 	}
 
-	token, err := dao.GenerateToken(user.Phone, user.Nickname, int64(user.ID))
+	token, err := dao.GenerateToken(User.Phone, User.Nickname, int64(User.ID))
 	if err != nil {
 		logrus.Errorf("[service.Login] %v", err)
 		return model.LoginResponse{}, err
 	}
-	birthDay := user.BirthDay.Format("2006-01-02")
+	birthDay := User.BirthDay.Format("2006-01-02")
 	res := model.LoginResponse{
 		Token:         token,
-		AvatarUrl:     user.AvatarUrl,
-		Phone:         fmt.Sprintf("%d", user.Phone),
-		Email:         user.Email,
-		Name:          user.Name,
-		Nickname:      user.Nickname,
-		HearingDevice: user.HearingDevice,
-		Gender:        user.Gender,
+		AvatarUrl:     User.AvatarUrl,
+		Phone:         fmt.Sprintf("%d", User.Phone),
+		Email:         User.Email,
+		Name:          User.Name,
+		Nickname:      User.Nickname,
+		HearingDevice: User.HearingDevice,
+		Gender:        User.Gender,
 		BirthDay:      birthDay,
-		UserID:        user.ID,
+		UserID:        User.ID,
 	}
 	return res, err
 }
 
 func LoginByNickname(Nickname string, Password string) (model.LoginResponse, error) {
-	user, err := dao.GetUserByNickname(Nickname)
+	User, err := user.GetByNickname(Nickname)
 	if err != nil {
 		logrus.Errorf("[service.Login] %v", err)
 		return model.LoginResponse{}, err
 	}
 
-	if dao.Hash256(Password) != user.Password {
+	if dao.Hash256(Password) != User.Password {
 		logrus.Errorf("[service.Login] %v", err)
 		return model.LoginResponse{}, errors.New("PasswordError")
 	}
 
-	token, err := dao.GenerateToken(user.Phone, user.Nickname, int64(user.ID))
+	token, err := dao.GenerateToken(User.Phone, User.Nickname, int64(User.ID))
 	if err != nil {
 		logrus.Errorf("[service.Login] %v", err)
 		return model.LoginResponse{}, err
 	}
-	birthDay := user.BirthDay.Format("2006-01-02")
+	birthDay := User.BirthDay.Format("2006-01-02")
 	res := model.LoginResponse{
 		Token:         token,
-		AvatarUrl:     user.AvatarUrl,
-		Phone:         fmt.Sprintf("%d", user.Phone),
-		Email:         user.Email,
-		Name:          user.Name,
-		Nickname:      user.Nickname,
-		HearingDevice: user.HearingDevice,
-		Gender:        user.Gender,
+		AvatarUrl:     User.AvatarUrl,
+		Phone:         fmt.Sprintf("%d", User.Phone),
+		Email:         User.Email,
+		Name:          User.Name,
+		Nickname:      User.Nickname,
+		HearingDevice: User.HearingDevice,
+		Gender:        User.Gender,
 		BirthDay:      birthDay,
-		UserID:        user.ID,
+		UserID:        User.ID,
 	}
 	return res, err
 }
@@ -109,28 +110,28 @@ func LoginByNickname(Nickname string, Password string) (model.LoginResponse, err
 func UserInfoUpdate(token string, info *model.UpdateInfoParam) error {
 	claim, err := dao.ParseToken(token)
 	if err != nil {
-		logrus.Errorf("[service.UserInfoUpdate]ParseToken %v", err)
+		logrus.Errorf("[service.UpdateInfo]ParseToken %v", err)
 		return err
 	}
 
-	err = dao.UserInfoUpdate(claim.Phone, info)
+	err = user.UpdateInfo(claim.Phone, info)
 	if err != nil {
-		logrus.Errorf("[service.UserInfoUpdate] %v", err)
+		logrus.Errorf("[service.UpdateInfo] %v", err)
 	}
 	return err
 }
 
 func UserVerify(Phone int64, Name string, Email string) (string, bool) {
-	user, err := dao.GetUserByPhone(Phone)
+	User, err := user.GetByPhone(Phone)
 	if err != nil {
 		logrus.Errorf("[service.UserVerify] %v", err)
 		return "", false
 
 	}
 
-	if user.Email == Email && user.Name == Name {
+	if User.Email == Email && User.Name == Name {
 		//生成验证码, 5分钟有效
-		token, err := dao.GenerateTokenExpires(user.Phone, user.Nickname, int64(user.ID), 5*time.Minute)
+		token, err := dao.GenerateTokenExpires(User.Phone, User.Nickname, int64(User.ID), 5*time.Minute)
 		if err != nil {
 			logrus.Errorf("[service.UserVerify] %v", err)
 			return "", false
@@ -142,37 +143,37 @@ func UserVerify(Phone int64, Name string, Email string) (string, bool) {
 }
 
 func UserResetPassword(Phone int64, Password string) bool {
-	err := dao.UserResetPassword(Phone, Password)
+	err := user.ResetPassword(Phone, Password)
 	if err != nil {
-		logrus.Errorf("[service.UserResetPassword] %v", err)
+		logrus.Errorf("[service.ResetPassword] %v", err)
 		return false
 	}
 	return true
 }
 
 func UserUpdatePhone(token string, Phone int64) bool {
-	err := dao.UserUpdatePhone(token, Phone)
+	err := user.UpdatePhone(token, Phone)
 	if err != nil {
-		logrus.Errorf("[service.UserUpdatePhone] %v", err)
+		logrus.Errorf("[service.UpdatePhone] %v", err)
 		return false
 	}
 	return true
 }
 func UserUpdatePassword(token string, OldPassword string, NewPassword string) bool {
 	claim, _ := dao.ParseToken(token)
-	err := dao.UserUpdatePassword(claim.Phone, OldPassword, NewPassword)
+	err := user.UpdatePassword(claim.Phone, OldPassword, NewPassword)
 	if err != nil {
-		logrus.Errorf("[service.UserUpdatePassword] %v", err)
+		logrus.Errorf("[service.UpdatePassword] %v", err)
 		return false
 	}
 	return true
 }
 
 func UserGetProfile(Phone int64) (*model.User, error) {
-	user, err := dao.GetUserByPhone(Phone)
+	User, err := user.GetByPhone(Phone)
 	if err != nil {
 		logrus.Errorf("[service.UserGetProfile] %v", err)
 		return nil, err
 	}
-	return user, nil
+	return User, nil
 }

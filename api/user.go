@@ -2,6 +2,7 @@ package api
 
 import (
 	"LipLanguage/dao"
+	"LipLanguage/dao/user"
 	"LipLanguage/model"
 	"LipLanguage/service"
 	"github.com/gin-gonic/gin"
@@ -14,7 +15,7 @@ import (
 func Register(ctx *gin.Context) {
 	param := model.RegisterParam{}
 	err := ctx.ShouldBindJSON(&param)
-	logrus.Infof("Register %v", param)
+	logrus.Infof("Create %v", param)
 	// 验证手机号合法性
 	if len(param.Phone) != 11 || param.Phone[0] != '1' {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -24,13 +25,13 @@ func Register(ctx *gin.Context) {
 	}
 	NumPhone, err := strconv.Atoi(param.Phone)
 	if err != nil {
-		logrus.Errorf("[api] Register Bind Json %v", err)
+		logrus.Errorf("[api] Create Bind Json %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"msg": "参数错误",
 		})
 		return
 	}
-	if dao.UserExists(int64(NumPhone)) {
+	if user.Exists(int64(NumPhone)) {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"msg": "手机号已存在!",
 		})
@@ -40,7 +41,7 @@ func Register(ctx *gin.Context) {
 	token, err := service.Register(int64(NumPhone), param.Password)
 
 	if err != nil {
-		logrus.Errorf("[api.Register] %v", err)
+		logrus.Errorf("[api.Create] %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"msg": "服务端错误",
 		})
@@ -140,9 +141,9 @@ func ResetPassword(ctx *gin.Context) {
 func UserInfoUpdate(ctx *gin.Context) {
 	info := &model.UpdateInfoParam{}
 	err := ctx.ShouldBindJSON(info)
-	logrus.Infof("[api.UserInfoUpdate] %+v", info)
+	logrus.Infof("[api.UpdateInfo] %+v", info)
 	if err != nil {
-		logrus.Errorf("[api.UserInfoUpdate] %v", err)
+		logrus.Errorf("[api.UpdateInfo] %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"msg": "参数错误",
 		})
@@ -152,7 +153,7 @@ func UserInfoUpdate(ctx *gin.Context) {
 	token := ctx.GetHeader("auth")
 	err = service.UserInfoUpdate(token, info)
 	if err != nil {
-		logrus.Errorf("[api.UserInfoUpdate] %v", err)
+		logrus.Errorf("[api.UpdateInfo] %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"msg": "更新失败",
 		})
@@ -196,9 +197,9 @@ func UserVerify(ctx *gin.Context) {
 func UserUpdatePhone(ctx *gin.Context) {
 	param := model.UpdatePhoneParam{}
 	err := ctx.ShouldBindJSON(&param)
-	logrus.Infof("[api.UserUpdatePhone] %v", param)
+	logrus.Infof("[api.UpdatePhone] %v", param)
 	if err != nil {
-		logrus.Errorf("[api.UserUpdatePhone] %v", err)
+		logrus.Errorf("[api.UpdatePhone] %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"msg": "参数错误",
 		})
@@ -222,9 +223,9 @@ func UserUpdatePhone(ctx *gin.Context) {
 func UserUpdatePassword(ctx *gin.Context) {
 	param := model.UpdatePasswordParam{}
 	err := ctx.ShouldBindJSON(&param)
-	logrus.Infof("[api.UserUpdatePassword] %v", param)
+	logrus.Infof("[api.UpdatePassword] %v", param)
 	if err != nil {
-		logrus.Errorf("[api.UserUpdatePassword] %v", err)
+		logrus.Errorf("[api.UpdatePassword] %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"msg": "参数错误",
 		})

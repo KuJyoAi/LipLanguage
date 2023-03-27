@@ -140,7 +140,7 @@ func ResetPassword(ctx *gin.Context) {
 func UserInfoUpdate(ctx *gin.Context) {
 	info := &model.UpdateInfoParam{}
 	err := ctx.ShouldBindJSON(info)
-	logrus.Infof("[api.UserInfoUpdate] %v", info)
+	logrus.Infof("[api.UserInfoUpdate] %+v", info)
 	if err != nil {
 		logrus.Errorf("[api.UserInfoUpdate] %v", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{

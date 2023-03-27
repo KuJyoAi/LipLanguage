@@ -14,36 +14,43 @@ func Auth(ctx *gin.Context) {
 	if token == "" {
 		token = ctx.PostForm("auth")
 		if token == "" {
-			ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-				"msg": "No Token!",
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"msg":  "No Token!",
+				"data": gin.H{},
 			})
-			return
 		}
+		return
 	}
 
 	claims, err := dao.ParseToken(token)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
-			"msg": "token无效",
+		logrus.Infof("[midware] ParseToken %v", err)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"msg":  "token无效",
+			"data": gin.H{},
 		})
 		return
 	}
+
 	//检查用户是否存在
 	if !user.Exists(claims.Phone) {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"msg": "token无效",
 		})
 		return
 	}
+
 	//token是否过期
 	key := fmt.Sprintf("%v_Token", claims.Phone)
 	RedisToken, err := dao.RDB.Get(key).Result()
 	if err != nil || RedisToken != token {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"msg": "token无效",
 		})
 		return
 	}
+
+	ctx.Next()
 }
 
 // CORS 跨域问题

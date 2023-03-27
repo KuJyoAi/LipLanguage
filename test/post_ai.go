@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"github.com/sirupsen/logrus"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -10,9 +10,9 @@ import (
 )
 
 func main() {
-	path := "C:\\Users\\KuJyo\\Desktop\\北京时间.mp4"
+	url := "http://103.222.190.10:25555/lip"
 
-	file, err := os.Open(path)
+	file, err := os.Open("C:\\Users\\KuJyo\\Desktop\\北京时间.mp4")
 	if err != nil {
 		panic(err)
 	}
@@ -20,8 +20,7 @@ func main() {
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-
-	part, err := writer.CreateFormFile("video", path)
+	part, err := writer.CreateFormFile("video", file.Name())
 	if err != nil {
 		panic(err)
 	}
@@ -34,23 +33,19 @@ func main() {
 		panic(err)
 	}
 
-	// 读取返回
-	req, err := http.NewRequest("POST", "http://103.222.190.10:25555/lip", body)
-	req.Header.Set("Content-Type", writer.FormDataContentType())
+	request, err := http.NewRequest("POST", url, body)
 	if err != nil {
 		panic(err)
 	}
+	request.Header.Set("Content-Type", writer.FormDataContentType())
+
 	client := &http.Client{}
-	resp, err := client.Do(req)
+	response, err := client.Do(request)
 	if err != nil {
 		panic(err)
 	}
-	defer resp.Body.Close()
-	logrus.Infof("response Status: %v", resp.Status)
-	logrus.Infof("response Headers: %v", resp.Header)
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		panic(err)
-	}
-	logrus.Infof("response Body: %v", len(data))
+	defer response.Body.Close()
+
+	fmt.Println(response.Status)
+
 }

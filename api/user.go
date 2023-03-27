@@ -125,16 +125,12 @@ func ResetPassword(ctx *gin.Context) {
 	}
 
 	if service.UserResetPassword(int64(NumPhone), param.Password) {
-		ctx.JSON(http.StatusOK, gin.H{
-			"msg": "重置成功",
-		})
+		Response(ctx, http.StatusOK, "重置成功", nil)
 		//重置成功, 删除掉redis里的token, 防止重放攻击
-		dao.DeleteRedisToken(int64(NumPhone))
+		_ = dao.DeleteRedisToken(int64(NumPhone))
 		return
 	} else {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"msg": "重置失败",
-		})
+		Response(ctx, http.StatusBadRequest, "重置失败", nil)
 	}
 }
 
@@ -154,15 +150,11 @@ func UserInfoUpdate(ctx *gin.Context) {
 	err = service.UserInfoUpdate(token, info)
 	if err != nil {
 		logrus.Errorf("[api.UpdateInfo] %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"msg": "更新失败",
-		})
+		Response(ctx, http.StatusInternalServerError, "服务端错误", nil)
 		return
+	} else {
+		Response(ctx, http.StatusOK, "修改成功", nil)
 	}
-
-	ctx.JSON(http.StatusOK, gin.H{
-		"msg": "更新成功",
-	})
 }
 
 func UserVerify(ctx *gin.Context) {
@@ -249,24 +241,29 @@ func UserUpdatePassword(ctx *gin.Context) {
 func UserProfile(ctx *gin.Context) {
 	token := ctx.GetHeader("auth")
 	claim, _ := dao.ParseToken(token)
+
 	logrus.Infof("[api.UserProfile] %v", claim)
-	user, err := service.UserGetProfile(claim.Phone)
+	User, err := service.UserGetProfile(claim.Phone)
 	if err != nil {
-		logrus.Errorf("[api.UserProfile] %v", err)
+		logrus.Errorf("[api.UserProfile] UserGetProfile%v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"msg": "获取失败",
 		})
 		return
 	}
+	registerTime := User.CreatedAt.Format("2006-01-02 15:04:05")
 	ctx.JSON(http.StatusOK, gin.H{
 		"msg": "获取成功",
 		"data": gin.H{
-			"nickname":       user.Nickname,
-			"name":           user.Name,
-			"email":          user.Email,
-			"birthday":       user.BirthDay,
-			"gender":         user.Gender,
-			"hearing_device": user.HearingDevice,
+			"nickname":       User.Nickname,
+			"name":           User.Name,
+			"email":          User.Email,
+			"birthday":       User.BirthDay,
+			"gender":         User.Gender,
+			"phone":          User.Phone,
+			"Avatar":         User.AvatarUrl,
+			"hearing_device": User.HearingDevice,
+			"register_time":  registerTime,
 		},
 	})
 }

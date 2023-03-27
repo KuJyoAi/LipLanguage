@@ -41,6 +41,7 @@ func UploadVideo(ctx *gin.Context, phone int64, VideoID int64, data *multipart.F
 	// 发送给算法
 	logrus.Infof("Sending File to AI: path=%v, time=%v", path, time.Now())
 	resp, err, ok := dao.PostVideoPath(path)
+
 	if err != nil {
 		logrus.Errorf("[service.UploadVideo]%v", err)
 		if ok {

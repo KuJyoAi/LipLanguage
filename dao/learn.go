@@ -4,11 +4,13 @@ import (
 	"LipLanguage/common"
 	"LipLanguage/model"
 	"LipLanguage/util"
+	"bytes"
 	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"sync"
@@ -194,48 +196,64 @@ func GetAllStandardVideos(limit int, offset int) (*[]model.StandardVideo, error)
 }
 
 // PostVideoPath 把视频文件post过去, 发送路径
-func PostVideoPath(path string) (model.AiPostResponse, error, bool) {
+func PostVideoPath(path string) (ret model.AiPostResponse, err error, ok bool) {
 	// 加锁防止AI被高并发请求
 	AiLock.Lock()
 	defer AiLock.Unlock()
 
-	// 请求部分
+	// 请求部分:
 	URL := common.AIUrl
 	// 读取文件
+	logrus.Infof("[util.PostVideoPath] read file path= %v", path)
 	file, err := os.Open(path)
 	if err != nil {
 		logrus.Errorf("[util.PostVideoPath] fileread %v", err)
-		return model.AiPostResponse{}, err, false
+		return
 	}
 	defer file.Close()
 
-	// 创建请求
-	request, err := http.NewRequest("POST", URL, file)
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+	part, err := writer.CreateFormFile("file", file.Name())
+	if err != nil {
+		logrus.Errorf("[util.PostVideoPath] CreateFormFile %v", err)
+		return
+	}
+	_, err = io.Copy(part, file)
+	if err != nil {
+		logrus.Errorf("[util.PostVideoPath] Copy %v", err)
+		return
+	}
+	err = writer.Close()
+	if err != nil {
+		logrus.Errorf("[util.PostVideoPath] writer.Close%v", err)
+		return
+	}
+
+	// 发送请求
+	logrus.Infof("[util.PostVideoPath] send request to %v", URL)
+	request, err := http.NewRequest("POST", URL, body)
+	if err != nil {
+		logrus.Errorf("[util.PostVideoPath] NewRequest%v", err)
+		return
+	}
+	request.Header.Set("Content-Type", writer.FormDataContentType())
+
+	client := &http.Client{
+		Timeout: 60 * time.Second,
+	}
+	resp, err := client.Do(request)
 	if err != nil {
 		logrus.Errorf("[util.PostVideoPath] %v", err)
-		return model.AiPostResponse{}, err, false
+		return
 	}
-	request.Header.Set("Connection", "Keep-Alive")
-	var resp *http.Response
-
-	resp, err = http.DefaultClient.Do(request)
-	if err != nil {
-		logrus.Errorf("[util.PostVideoPath] %v", err)
-		return model.AiPostResponse{}, err, false
-	}
-
 	// 读取返回
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			logrus.Errorf("[util.PostVideoPath] %v", err)
-		}
-	}(resp.Body)
+	defer resp.Body.Close()
 
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		logrus.Errorf("[util.PostVideoPath] %v", err)
-		return model.AiPostResponse{}, err, false
+		return
 	}
 
 	if resp.StatusCode != 200 {
@@ -265,13 +283,14 @@ ContentLength: %v`, resp.StatusCode, resp.Status, resp.ContentLength)), true
 	// 获取数据
 	Res := data[2:DataStart]
 	data = data[DataStart:]
-	ret := model.AiPostResponse{
+	ret = model.AiPostResponse{
 		Result: string(Res),
 		Data:   &data,
 	}
 
 	logrus.Infof(`[util.PostVideoPath] AI Response:
 data[1]: %d ResLen:%v result_len:%v`, data[1], len(Res), len(ret.Result))
+
 	return ret, nil, true
 }
 

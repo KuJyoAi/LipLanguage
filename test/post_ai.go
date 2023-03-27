@@ -12,7 +12,7 @@ import (
 func main() {
 	url := "http://103.222.190.10:25555/lip"
 
-	file, err := os.Open("C:\\Users\\KuJyo\\Desktop\\北京时间.mp4")
+	file, err := os.Open("/root/src/user/standard/1.mp4")
 	if err != nil {
 		panic(err)
 	}

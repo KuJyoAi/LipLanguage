@@ -214,7 +214,7 @@ func PostVideoPath(path string) (ret model.AiPostResponse, err error, ok bool) {
 
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile("file", file.Name())
+	part, err := writer.CreateFormFile("video", file.Name())
 	if err != nil {
 		logrus.Errorf("[util.PostVideoPath] CreateFormFile %v", err)
 		return

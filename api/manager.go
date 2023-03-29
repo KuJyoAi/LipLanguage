@@ -13,6 +13,7 @@ func UploadStandardVideo(ctx *gin.Context) {
 	answer := ctx.PostForm("answer")
 	videoFile, _, err1 := ctx.Request.FormFile("video")
 	lipFile, _, err2 := ctx.Request.FormFile("lip_video")
+
 	if err1 != nil || err2 != nil {
 		logrus.Infof("[api.UploadStandardVideo] answer=%v err1=%v err2=%v",
 			answer, err1, err2)

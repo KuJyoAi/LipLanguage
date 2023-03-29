@@ -31,7 +31,8 @@ func init() {
 		&model.LearnRecord{},
 		&model.StandardVideo{},
 		&model.Resource{},
-		&model.RouterCounter{})
+		&model.RouterCounter{},
+		&model.StandardVideoCount{})
 
 	//连接Redis
 	RDB = redis.NewClient(&redis.Options{

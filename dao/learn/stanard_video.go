@@ -44,3 +44,7 @@ func GetAllStandardVideos(limit int, offset int, Order string) ([]model.Standard
 		Find(&ret).Error
 	return ret, err
 }
+
+func CreateStandardVideo(video model.StandardVideo) error {
+	return dao.DB.Create(&video).Error
+}

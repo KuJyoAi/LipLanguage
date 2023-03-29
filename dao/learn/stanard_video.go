@@ -8,16 +8,16 @@ import (
 func GetStandardVideo(ID int64) (model.StandardVideo, error) {
 	ret := model.StandardVideo{}
 	err := dao.DB.Model(model.StandardVideo{}).
-		Select(`standard_video.id,
-					  standard_video.answer,
-					  standard_video.src_id,
-					  standard_video.lip_id,	
-					  standard_video.created_at,	
-					  standard_video_count.learn_count,	
-					  standard_video_count.learnt_time`).
-		Joins(`LEFT JOIN standard_video_count
-					 ON standard_video.id = standard_video_count.video_id`).
-		Where("standard_video.id = ?", ID).
+		Select(`standard_videos.id,
+					  standard_videos.answer,
+					  standard_videos.src_id,
+					  standard_videos.lip_id,	
+					  standard_videos.created_at,	
+					  standard_video_counts.learn_count,	
+					  standard_video_counts.learnt_time`).
+		Joins(`LEFT JOIN standard_video_counts
+					 ON standard_videos.id = standard_video_counts.video_id`).
+		Where("standard_videos.id = ?", ID).
 		First(&ret).Error
 	return ret, err
 }
@@ -29,15 +29,15 @@ func GetAllStandardVideos(limit int, offset int, Order string) ([]model.Standard
 		Order = "id asc"
 	}
 	err := dao.DB.Model(model.StandardVideo{}).
-		Select(`standard_video.id,
-		              standard_video.answer,
-					  standard_video.src_id,
-					  standard_video.lip_id,
-					  standard_video.created_at,
-					  standard_video_count.learn_count,
- 					  standard_video_count.learnt_time`).
-		Joins(`LEFT JOIN standard_video_count
-                     ON standard_video.id = standard_video_count.video_id`).
+		Select(`standard_videos.id,
+		              standard_videos.answer,
+					  standard_videos.src_id,
+					  standard_videos.lip_id,
+					  standard_videos.created_at,
+					  standard_video_counts.learn_count,
+ 					  standard_video_counts.learnt_time`).
+		Joins(`LEFT JOIN standard_video_counts
+                     ON standard_videos.id = standard_video_counts.video_id`).
 		Limit(limit).
 		Offset(offset).
 		Order(Order).

@@ -10,18 +10,17 @@ import (
 )
 
 func Auth(ctx *gin.Context) {
-	token := ctx.GetHeader("auth")
-	if token == "" {
-		token = ctx.PostForm("auth")
-		if token == "" {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"msg":  "No Token!",
-				"data": gin.H{},
-			})
-		}
+	token, err := ctx.Cookie("auth")
+	if err != nil {
+		logrus.Infof("[midware] Cookie %v", err)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"msg":  "No Token!",
+			"data": gin.H{},
+		})
 		return
 	}
 
+	//解析token
 	claims, err := dao.ParseToken(token)
 	if err != nil {
 		logrus.Infof("[midware] ParseToken %v", err)

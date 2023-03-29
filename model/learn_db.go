@@ -5,41 +5,61 @@ import (
 	"time"
 )
 
-// LearnRecord 学习数据
+// LearnRecord 学习数据记录
 type LearnRecord struct {
-	gorm.Model `json:"gorm-.-model"`
-	UserID     int64  `gorm:"index" json:"user_id,omitempty"`
-	Result     string `json:"result,omitempty"`
-	VideoID    int64  `gorm:"index" json:"video_id,omitempty"`
-	Right      bool   `json:"right,omitempty"`
-}
-
-// StandardVideo 标准视频
-type StandardVideo struct {
-	gorm.Model
-	Answer     string `gorm:"answer"`
-	SrcID      int64  `gorm:"sid" json:"src_id"`
-	LipID      int64  `gorm:"lid" json:"lip_id"`
-	LearnCount int64  `gorm:"learn_count" json:"-"`
-	RightCount int64  `gorm:"right_count" json:"-"`
-}
-
-// RouterCounter 统计路由调用
-type RouterCounter struct {
-	gorm.Model
-	UserID int64  `gorm:"user_id,index"`
-	Path   string `gorm:"path"`
+	ID        int64          `gorm:"primaryKey" json:"id,omitempty"`
+	UserID    int64          `gorm:"index" json:"user_id,omitempty"`
+	VideoID   int64          `gorm:"video_id,index" json:"video_id,omitempty"`
+	Result    string         `gorm:"result" json:"result,omitempty"`
+	Right     bool           `gorm:"right" json:"right,omitempty"`
+	SrcID     string         `gorm:"src_id" json:"video_src,omitempty"`
+	LipID     string         `gorm:"lip_id" json:"video_lip,omitempty"`
+	CreateAt  time.Time      `gorm:"create_at" json:"-"`
+	UpdatedAt time.Time      `gorm:"updated_at" json:"-"`
+	DeletedAt gorm.DeletedAt `gorm:"deleted_at, index" json:"-"`
 }
 
 // LearnStatistics 学习数据统计
 type LearnStatistics struct {
-	gorm.Model
-	UserID       uint `gorm:"user_id,index"`
-	TodayLearn   int  `gorm:"today_learn"`
-	TodayMaster  int  `gorm:"today_master"`
-	TotalLearn   int  `gorm:"total_learn"`
-	LastRouterID uint `gorm:"last_router_id"`
-	TodayTime    int  `gorm:"today_time"`
-	TotalTime    int  `gorm:"total_time"`
-	Today        time.Time
+	ID     int64 `gorm:"primaryKey" json:"id,omitempty"`
+	UserID int64 `gorm:"user_id,index"`
+
+	// 学习情况
+	TodayLearn  int `gorm:"today_learn"`
+	TodayMaster int `gorm:"today_master"`
+	TotalLearn  int `gorm:"total_learn"`
+	TodayTime   int `gorm:"today_time"`
+	TotalTime   int `gorm:"total_time"`
+
+	// 查询条件
+	Year      int            `gorm:"year index:idx" json:"-"`
+	Month     int            `gorm:"month index:idx" json:"-"`
+	Day       int            `gorm:"day" json:"-"`
+	CreateAt  time.Time      `gorm:"create_at" json:"-"`
+	UpdatedAt time.Time      `gorm:"updated_at" json:"-"`
+	DeletedAt gorm.DeletedAt `gorm:"deleted_at, index" json:"-"`
+}
+
+// StandardVideoCount 用户对每个标准视频的学习次数
+type StandardVideoCount struct {
+	ID      int64 `gorm:"primaryKey" json:"id,omitempty"`
+	UserID  int64 `gorm:"user_id,index:idx" json:"user_id"`
+	VideoID int64 `gorm:"video_id,index:idx" json:"video_id"`
+	// 统计数据
+	LearnCount int `gorm:"count" json:"learn_count"`
+	LearnTime  int `gorm:"learn_time" json:"learn_time"`
+
+	CreatedAt time.Time      `json:"-"`
+	UpdatedAt time.Time      `json:"-"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
+// RouterCounter 统计路由调用
+type RouterCounter struct {
+	ID        int64          `gorm:"primaryKey" json:"id,omitempty"`
+	CreateAt  time.Time      `gorm:"create_at" json:"-"`
+	UpdatedAt time.Time      `gorm:"updated_at" json:"-"`
+	DeletedAt gorm.DeletedAt `gorm:"deleted_at, index" json:"-"`
+	UserID    int64          `gorm:"user_id,index"`
+	Path      string         `gorm:"path"`
 }

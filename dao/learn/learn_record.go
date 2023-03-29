@@ -3,174 +3,120 @@ package learn
 import (
 	"LipLanguage/dao"
 	"LipLanguage/model"
-	"LipLanguage/util"
-	"fmt"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"time"
 )
 
-// SaveLearnRecord 保存学习记录
-func SaveLearnRecord(data model.LearnRecord) error {
-	return dao.DB.Model(model.LearnRecord{}).Create(&data).Error
-}
-
-// GetVideoLearnData 获取视频的学习记录
-func GetVideoLearnData(VideoID int64, Offset int, Limit int) (*[]model.LearnRecord, error) {
-	var ret []model.LearnRecord
-	err := dao.DB.Model(model.LearnRecord{}).
-		Where("video_id=?", VideoID).
-		Offset(Offset).
-		Limit(Limit).
-		Find(&ret).Error
-	return &ret, err
-}
-
-// CreateTodayStatistics
-// 创建今天的记录, 并返回创建的记录
-// 没有检查今天是否有, 所以调用前需要做检查
-func CreateTodayStatistics(UserID uint, LastRecord model.LearnStatistics) (model.LearnStatistics, error) {
-	// 根据上一天的数据创建今天的
-	data := model.LearnStatistics{
-		Model:        gorm.Model{},
-		UserID:       UserID,
-		TodayLearn:   0,
-		TodayMaster:  0,
-		TotalLearn:   LastRecord.TotalLearn,
-		TodayTime:    0,
-		TotalTime:    LastRecord.TotalTime,
-		LastRouterID: LastRecord.LastRouterID,
-		Today:        time.Now(),
-	}
-	err := dao.DB.Model(model.LearnStatistics{}).Create(&data).Error
+// CreateLearnRecord 创建学习记录, 并更新用户的统计数据(表同步更新)
+func CreateLearnRecord(record model.LearnRecord) error {
+	tx := dao.DB.Begin()
+	err := tx.Create(&record).Error
 	if err != nil {
-		logrus.Errorf("[dao.CreateTodayStatistics] %v", err)
+		tx.Rollback()
+		return err
 	}
-	return data, err
-}
 
-// GetUserTodayStatistics
-// 获取用户今天的学习数据
-func GetUserTodayStatistics(UserID uint) (model.LearnStatistics, error) {
-	// 查最新的学习数据
-	Statistic := model.LearnStatistics{}
-	err := dao.DB.Model(model.LearnStatistics{}).
-		Where("user_id = ?", UserID).
-		Order("created_at desc").
-		Take(&Statistic).Error
-	//fmt.Printf("[dao.GetUserTodayStatistics] 查最新的学习数据%+v\n", Statistic)
-	logrus.Infof("[dao.GetUserTodayStatistics] User: %v, Get Last Learn Data", UserID)
+	// 更新用户的统计数据
+	err = SyncBasedOnLearnRecord(record, tx)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			// 用户的第一个数据, 创建
-			Statistic = model.LearnStatistics{
-				Model:        gorm.Model{},
-				UserID:       UserID,
-				TodayLearn:   0,
-				TodayMaster:  0,
-				TotalLearn:   0,
-				TodayTime:    0,
-				TotalTime:    0,
-				LastRouterID: 0,
-				Today:        time.Now(),
-			}
-			err = dao.DB.Model(model.LearnStatistics{}).Save(&Statistic).Error
-			//fmt.Println("Today's First Data")
-			logrus.Infof("[dao.GetUserTodayStatistics] User: %v, Today's First Data", UserID)
-		} else {
-			// 未找到之外的其他错误
-			logrus.Errorf("[dao.GetUserTodayStatistics] %v", err)
-			return model.LearnStatistics{}, err
-		}
-	} else {
-		// 查到上一次数据, 需要先比较是否为今天的, 不是则创建
-		if !util.SameDay(Statistic.Today, time.Now()) {
-			Statistic, err = CreateTodayStatistics(UserID, Statistic)
-			//fmt.Printf("[dao.GetUserTodayStatistics]不是同一天, 创建\n")
-			logrus.Infof("[dao.GetUserTodayStatistics] User: %v, Not Same Day, Create", UserID)
-			if err != nil {
-				return Statistic, err
-			}
-		}
+		logrus.Errorf("[dao] SyncBasedOnLearnRecord %v", err)
+		tx.Rollback()
+		return err
 	}
 
-	// 更新时间
-	Statistic, err = UpdateStatisticTime(Statistic, UserID)
-
-	return Statistic, err
+	tx.Commit()
+	return nil
 }
 
-// UpdateStatisticTime 更新时间, 也会保存数据库
-// 传入的Statistics必须是最新的
-func UpdateStatisticTime(statistics model.LearnStatistics, UserID uint) (model.LearnStatistics, error) {
-	// 根据上一次的id寻找之后的统计记录
-	var counter []model.RouterCounter
-	err := dao.DB.Model(model.RouterCounter{}).
-		Where("user_id = ? and id >= ?", UserID, statistics.LastRouterID).
-		Find(&counter).Error
+// GetLastLearnRecordByUserID 根据用户ID获取用户的最后一条学习记录, 如果不存在则返回错误
+func GetLastLearnRecordByUserID(userID int64) (model.LearnRecord, error) {
+	lastRecord := model.LearnRecord{}
+	err := dao.DB.
+		Where("user_id = ?", userID).
+		Order("create_at desc").
+		First(&lastRecord).Error
+	return lastRecord, err
+}
+
+// SyncBasedOnLearnRecord 根据学习记录更新用户的统计数据
+func SyncBasedOnLearnRecord(record model.LearnRecord, tx *gorm.DB) error {
+	// 1. Statistics表
+	// (1) 今日学习次数+1, 总学习次数+1
+	todayStatistics, err := GetTodayStatisticsByUserID(record.UserID)
+	todayStatistics.TodayLearn += 1
+	todayStatistics.TotalLearn += 1
+	if record.Right {
+		todayStatistics.TodayMaster += 1
+	}
+	// (2) 今日学习时长, 总学习时长
+	lastRecord, err := GetLastLearnRecordByUserID(record.UserID)
 	if err != nil && err != gorm.ErrRecordNotFound {
-		return model.LearnStatistics{}, err
+		logrus.Errorf("[dao.SyncBasedOnLearnRecord] GetLastLearnRecordByUserID %v", err)
+		return err
 	}
-
-	fmt.Printf("[dao.UpdateStatisticTime] User: %v, Num of LastRecords: %+v",
-		UserID, len(counter))
-
-	// 不足两个记录, 不需要更新
-	if len(counter) < 2 {
-		return statistics, nil
-	}
-
-	// 计算时间
-	period := 0.0
-	for i := 0; i < len(counter)-1; i++ {
-		t := counter[i+1].CreatedAt.Sub(counter[i].CreatedAt)
-		// 小于10分钟内的操作认为用户学习中
-		if t <= 10*time.Minute {
-			period += t.Minutes()
+	if err == gorm.ErrRecordNotFound {
+		// 如果没有上一条记录, 则今日学习时长为1
+		todayStatistics.TodayTime = 1
+		todayStatistics.TotalTime = 1
+	} else {
+		// 如果有上一条记录, 则今日学习时长为本次学习时间减去上一次学习时间, 单位为min
+		// 10min外的学习记录不计入今日学习时长
+		// 不足1min的学习记录按1min计算
+		if record.CreateAt.Sub(lastRecord.CreateAt) <= 10*time.Minute {
+			learnSeconds := int(record.CreateAt.Sub(lastRecord.CreateAt).Seconds())
+			todayStatistics.TodayTime += (learnSeconds / 60) + 1
+			todayStatistics.TotalTime += (learnSeconds / 60) + 1
 		}
-		// 更新id
-		statistics.LastRouterID = counter[i].ID
 	}
-
-	statistics.TodayTime += int(period)
-	statistics.TotalTime += int(period)
-	// 保存到数据库中
-	err = dao.DB.Model(model.LearnStatistics{}).Where("id=?", statistics.ID).Save(statistics).Error
-	return statistics, err
-}
-
-func GetDayHistory(limit int, offset int, UserID int64) (*[]model.LearnStatistics, error) {
-	var ret []model.LearnStatistics
-	err := dao.DB.Model(model.LearnStatistics{}).Where("id=?", UserID).
-		Offset(offset).Limit(limit).Find(&ret).Error
-	return &ret, err
-}
-
-// AddLearnCount 增加今日学习新词
-func AddLearnCount(UserID uint, add int) error {
-	Statistic, err := GetUserTodayStatistics(UserID)
+	err = tx.Save(&todayStatistics).Error
 	if err != nil {
+		logrus.Errorf("[dao.SyncBasedOnLearnRecord] Statistics Sync %v", err)
 		return err
 	}
 
-	Statistic.TodayLearn += add
-	Statistic.TotalLearn += add
-	return dao.DB.Model(model.LearnStatistics{}).
-		Where("id=?", Statistic.ID).
-		Save(&Statistic).Error
-}
-
-// AddMasterCount 增加今日掌握新词
-func AddMasterCount(UserID uint, add int) error {
-	Statistic, err := GetUserTodayStatistics(UserID)
+	// 2. StandardVideoCount表
+	err = tx.Model(&model.StandardVideoCount{}).
+		Where("user_id = ? and video_id = ?", record.UserID, record.VideoID).
+		FirstOrCreate(&model.StandardVideoCount{
+			UserID:     record.UserID,
+			VideoID:    record.VideoID,
+			LearnCount: 0,
+			LearnTime:  0,
+		}).Error
 	if err != nil {
+		logrus.Errorf("[dao.SyncBasedOnLearnRecord] StandardVideoCount Take %v", err)
 		return err
 	}
+	err = tx.Model(&model.StandardVideoCount{}).
+		Where("user_id = ? and video_id = ?", record.UserID, record.VideoID).
+		Update("learn_count", gorm.Expr("learn_count + ?", 1)).
+		Update("learn_time",
+			gorm.Expr("learn_time + ?", record.CreateAt.Sub(lastRecord.CreateAt).Minutes()+1)).
+		Error
+	if err != nil {
+		logrus.Errorf("[dao.SyncBasedOnLearnRecord] StandardVideoCount Update %v", err)
+	}
+	return nil
+}
 
-	Statistic.TotalLearn += add
-	Statistic.TodayMaster += add
-	Statistic.TotalLearn += add
-	return dao.DB.Model(model.LearnStatistics{}).
-		Where("id=?", Statistic.ID).
-		Save(&Statistic).Error
+func GetStandardVideoLearnRecord(
+	UserID int64, VideoID int64, limit int, offset int, order string) (
+	data []model.LearnRecordResponse, err error) {
+	if order == "" {
+		order = "create_at desc"
+	}
+	err = dao.DB.
+		Model(&model.LearnRecord{}).
+		Select(`learn_record.src_id
+					  learn_record.lip_id
+					  learn_record.create_at
+					  learn_record.result
+					  learn_record.right`).
+		Where("user_id = ? and video_id = ?", UserID, VideoID).
+		Order(order).
+		Limit(limit).
+		Offset(offset).
+		Find(&data).Error
+	return
 }

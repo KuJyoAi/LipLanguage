@@ -10,30 +10,24 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
-	"os"
+	"sync"
 	"time"
 )
 
-// PostVideoPath 把视频文件post过去, 发送路径
-func PostVideoPath(path string) (ret model.AiPostResponse, err error, ok bool) {
+var AiLock sync.Mutex
+
+// PostToAi 把视频文件post过去, 发送路径
+func PostToAi(data []byte) (ret model.AiPostResponse, err error) {
 	// 加锁防止AI被高并发请求
 	AiLock.Lock()
 	defer AiLock.Unlock()
 
 	// 请求部分:
 	URL := common.AIUrl
-	// 读取文件
-	logrus.Infof("[util.PostVideoPath] read file path= %v", path)
-	file, err := os.Open(path)
-	if err != nil {
-		logrus.Errorf("[util.PostVideoPath] fileread %v", err)
-		return
-	}
-	defer file.Close()
-
+	file := bytes.NewReader(data)
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
-	part, err := writer.CreateFormFile("video", file.Name())
+	part, err := writer.CreateFormFile("video", "file.webm")
 	if err != nil {
 		logrus.Errorf("[util.PostVideoPath] CreateFormFile %v", err)
 		return
@@ -66,10 +60,10 @@ func PostVideoPath(path string) (ret model.AiPostResponse, err error, ok bool) {
 		logrus.Errorf("[util.PostVideoPath] %v", err)
 		return
 	}
-	// 读取返回
 	defer resp.Body.Close()
 
-	data, err := io.ReadAll(resp.Body)
+	// 读取返回
+	data, err = io.ReadAll(resp.Body)
 	if err != nil {
 		logrus.Errorf("[util.PostVideoPath] %v", err)
 		return
@@ -77,13 +71,8 @@ func PostVideoPath(path string) (ret model.AiPostResponse, err error, ok bool) {
 
 	if resp.StatusCode != 200 {
 		//有错误
-		logrus.Errorf("[util.PostVideoPath] %v:%v",
-			resp.StatusCode, resp.Status)
-		return model.AiPostResponse{}, errors.New(fmt.Sprintf(
-			`AI Failed!
-Code: %v
-Status: %v
-ContentLength: %v`, resp.StatusCode, resp.Status, resp.ContentLength)), true
+		logrus.Errorf("[util.PostVideoPath] %v", resp.Status)
+		return ret, errors.New(fmt.Sprintf("AI返回错误:%v", resp.Status))
 	}
 
 	// 数据格式: 00 00 结果 视频数据
@@ -104,11 +93,9 @@ ContentLength: %v`, resp.StatusCode, resp.Status, resp.ContentLength)), true
 	data = data[DataStart:]
 	ret = model.AiPostResponse{
 		Result: string(Res),
-		Data:   &data,
+		Data:   data,
 	}
 
-	logrus.Infof(`[util.PostVideoPath] AI Response:
-data[1]: %d ResLen:%v result_len:%v`, data[1], len(Res), len(ret.Result))
-
-	return ret, nil, true
+	logrus.Infof(`[util.PostVideoPath] AI Response: data[1]: %d ResLen:%v result_len:%v`, data[1], len(Res), len(ret.Result))
+	return ret, err
 }

@@ -146,8 +146,9 @@ func UserInfoUpdate(ctx *gin.Context) {
 		return
 	}
 
-	token := ctx.GetHeader("auth")
+	token, _ := ctx.Cookie("auth")
 	err = service.UserInfoUpdate(token, info)
+
 	if err != nil {
 		logrus.Errorf("[api.UpdateInfo] %v", err)
 		Response(ctx, http.StatusInternalServerError, "服务端错误", nil)
@@ -198,7 +199,7 @@ func UserUpdatePhone(ctx *gin.Context) {
 		return
 	}
 	NumPhone, err := strconv.Atoi(param.Phone)
-	token := ctx.GetHeader("auth")
+	token, _ := ctx.Cookie("auth")
 	if service.UserUpdatePhone(token, int64(NumPhone)) {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"msg": "改绑成功",
@@ -224,7 +225,7 @@ func UserUpdatePassword(ctx *gin.Context) {
 		return
 	}
 
-	token := ctx.GetHeader("auth")
+	token, _ := ctx.Cookie("auth")
 	if service.UserUpdatePassword(token, param.OldPassword, param.NewPassword) {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"msg": "修改成功",
@@ -239,7 +240,7 @@ func UserUpdatePassword(ctx *gin.Context) {
 }
 
 func UserProfile(ctx *gin.Context) {
-	token := ctx.GetHeader("auth")
+	token, _ := ctx.Cookie("auth")
 	claim, _ := dao.ParseToken(token)
 
 	logrus.Infof("[api.UserProfile] %v", claim)

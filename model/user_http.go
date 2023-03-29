@@ -17,7 +17,7 @@ type LoginResponse struct {
 	AvatarUrl     string `json:"avatar_url"`
 	Phone         string `json:"phone"`
 	Email         string `json:"email"`
-	UserID        uint   `json:"user_id"`
+	UserID        int64  `json:"user_id"`
 	HearingDevice bool   `json:"hearing_device"`
 	Gender        int    `json:"gender"`
 	BirthDay      string `gorm:"birthday"`

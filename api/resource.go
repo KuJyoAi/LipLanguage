@@ -6,20 +6,18 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 	"net/http"
-	"strconv"
 )
 
 func GetResource(ctx *gin.Context) {
-	RawSrcID := ctx.PostForm("src_id")
-	SrcID, err := strconv.Atoi(RawSrcID)
-	if err != nil {
+	SrcID := ctx.PostForm("src_id")
+	if SrcID == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"msg": "参数不合法",
 		})
 		return
 	}
 
-	data, err := service.GetResource(uint(SrcID))
+	data, err := service.GetResource(SrcID)
 	if err != nil {
 		logrus.Errorf("[api.GetResource]%v", err)
 		if err == gorm.ErrRecordNotFound {

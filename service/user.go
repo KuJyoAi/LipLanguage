@@ -7,14 +7,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
-	"gorm.io/gorm"
 	"time"
 )
 
 func Register(Phone int64, Password string) (string, error) {
 
 	User := model.User{
-		Model:         gorm.Model{},
 		AvatarUrl:     "",
 		Phone:         Phone,
 		Email:         "",

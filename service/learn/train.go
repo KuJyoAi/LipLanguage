@@ -44,14 +44,14 @@ func UploadTrainVideo(phone int64, VideoID int64, data []byte) (ret model.AiPost
 	}
 	// 保存训练记录
 	record := model.LearnRecord{
-		UserID:   User.ID,
-		VideoID:  VideoID,
-		Result:   AiRes.Result,
-		Right:    AiRes.Result == standard.Answer,
-		VideoSrc: trainVideo.SrcID,
-		VideoLip: lipVideo.SrcID,
+		UserID:  User.ID,
+		VideoID: VideoID,
+		Result:  AiRes.Result,
+		Right:   AiRes.Result == standard.Answer,
+		SrcID:   trainVideo.SrcID,
+		LipID:   lipVideo.SrcID,
 	}
-	
+
 	err = learn.CreateLearnRecord(record)
 	if err != nil {
 		logrus.Errorf("[service] CreateLearnRecord %v", err)

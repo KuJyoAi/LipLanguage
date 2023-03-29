@@ -29,11 +29,12 @@ func SaveVideoFile(record model.LearnRecord, data []byte) error {
 	return nil
 }
 
-func GetAllStandardVideos(limit, offset int) ([]model.StandardVideo, error) {
-	data, err := learn.GetAllStandardVideos(limit, offset)
+// GetAllStandardVideos 获取所有标准视频, 加上统计信息
+func GetAllStandardVideos(limit, offset int, order string) ([]model.StandardVideoResponse, error) {
+	data, err := learn.GetAllStandardVideos(limit, offset, order)
 	if err != nil {
 		logrus.Errorf("[service.GetAllStandardVideos] %v", err)
 		return nil, err
 	}
-	return *data, err
+	return data, err
 }

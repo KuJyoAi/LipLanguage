@@ -18,19 +18,28 @@ func Router(r *gin.Engine) {
 			user.POST("/resetpassword", midware.Auth, ResetPassword)
 			user.POST("/updatephone", midware.Auth, UserUpdatePhone)
 			user.POST("/updatepassword", midware.Auth, UserUpdatePassword)
-			user.POST("/profile", midware.Auth, UserProfile)
+			user.GET("/profile", midware.Auth, UserProfile)
 		}
+
 		learn := api.Group("learn")
+		learn.Use(midware.Auth)
 		{
-			learn.POST("/train", midware.Auth, midware.RouterCount, UploadVideo)
-			learn.POST("/upload", UploadStandardVideo)
-			//learn.GET("/get_svideo", midware.Auth, midware.RouterCount)
-			learn.POST("/history", midware.Auth, midware.RouterCount, GetVideoHistory)
-			learn.POST("/today", midware.Auth, midware.RouterCount, GetTodayRecord)
-			learn.POST("/standard", midware.Auth, midware.RouterCount, GetAllStandardVideos)
-			learn.POST("/dayhistory", midware.Auth, midware.RouterCount, GetDayHistory)
+			learn.GET("/getStandards", GetStandardVideos)
+			learn.POST("/standardHistory", GetStandardVideoLearnHistory)
+			learn.POST("/train", UploadTrainVideo)
+
+			learnData := learn.Group("statistics")
+			{
+				learnData.POST("/today", GetTodayStatistic)
+				learnData.POST("/month", GetMonthRecord)
+			}
 		}
-		api.POST("/resource", midware.Auth, midware.RouterCount, GetResource)
+		manager := api.Group("manager")
+		{
+			manager.POST("/uploadStandard", UploadStandardVideo)
+		}
+
+		api.GET("/resource", midware.Auth, GetResource)
 	}
 
 	// 测试页面

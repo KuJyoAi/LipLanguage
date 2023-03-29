@@ -4,14 +4,15 @@ import (
 	"LipLanguage/service"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"io"
 	"net/http"
 )
 
 // UploadStandardVideo 上传标准视频
 func UploadStandardVideo(ctx *gin.Context) {
 	answer := ctx.PostForm("answer")
-	video, err1 := ctx.FormFile("video")
-	lip, err2 := ctx.FormFile("lip_video")
+	videoFile, _, err1 := ctx.Request.FormFile("video")
+	lipFile, _, err2 := ctx.Request.FormFile("lip_video")
 	if err1 != nil || err2 != nil {
 		logrus.Infof("[api.UploadStandardVideo] answer=%v err1=%v err2=%v",
 			answer, err1, err2)
@@ -21,7 +22,26 @@ func UploadStandardVideo(ctx *gin.Context) {
 		return
 	}
 
-	videoId, lipId, err := service.UploadStandardVideo(ctx, video, lip, answer)
+	videoData, err := io.ReadAll(videoFile)
+	if err != nil {
+		logrus.Errorf("[api.UploadStandardVideo] %v", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"msg": "视频错误",
+		})
+		return
+	}
+
+	lipData, err := io.ReadAll(lipFile)
+	if err != nil {
+		logrus.Errorf("[api.UploadStandardVideo] %v", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"msg": "视频错误",
+		})
+		return
+	}
+
+	videoId, lipId, err := service.UploadStandardVideo(answer, videoData, lipData)
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"msg": "上传失败",

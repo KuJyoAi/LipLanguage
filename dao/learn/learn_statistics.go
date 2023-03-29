@@ -52,7 +52,7 @@ func GetTodayStatisticsByUserID(userID int64) (ret model.LearnStatistics, err er
 func GetLastStatisticsByUserID(userID int64) (ret model.LearnStatistics, err error) {
 	err = dao.DB.
 		Where("user_id = ?", userID).
-		Order("create_at desc").
+		Order("created_at desc").
 		First(&ret).Error
 
 	if err != nil {

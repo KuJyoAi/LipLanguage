@@ -34,7 +34,7 @@ func GetLastLearnRecordByUserID(userID int64) (model.LearnRecord, error) {
 	lastRecord := model.LearnRecord{}
 	err := dao.DB.
 		Where("user_id = ?", userID).
-		Order("create_at desc").
+		Order("created_at desc").
 		First(&lastRecord).Error
 	return lastRecord, err
 }
@@ -63,8 +63,8 @@ func SyncBasedOnLearnRecord(record model.LearnRecord, tx *gorm.DB) error {
 		// 如果有上一条记录, 则今日学习时长为本次学习时间减去上一次学习时间, 单位为min
 		// 10min外的学习记录不计入今日学习时长
 		// 不足1min的学习记录按1min计算
-		if record.CreateAt.Sub(lastRecord.CreateAt) <= 10*time.Minute {
-			learnSeconds := int(record.CreateAt.Sub(lastRecord.CreateAt).Seconds())
+		if record.CreatedAt.Sub(lastRecord.CreatedAt) <= 10*time.Minute {
+			learnSeconds := int(record.CreatedAt.Sub(lastRecord.CreatedAt).Seconds())
 			todayStatistics.TodayTime += (learnSeconds / 60) + 1
 			todayStatistics.TotalTime += (learnSeconds / 60) + 1
 		}
@@ -92,7 +92,7 @@ func SyncBasedOnLearnRecord(record model.LearnRecord, tx *gorm.DB) error {
 		Where("user_id = ? and video_id = ?", record.UserID, record.VideoID).
 		Update("learn_count", gorm.Expr("learn_count + ?", 1)).
 		Update("learn_time",
-			gorm.Expr("learn_time + ?", record.CreateAt.Sub(lastRecord.CreateAt).Minutes()+1)).
+			gorm.Expr("learn_time + ?", record.CreatedAt.Sub(lastRecord.CreatedAt).Minutes()+1)).
 		Error
 	if err != nil {
 		logrus.Errorf("[dao.SyncBasedOnLearnRecord] StandardVideoCount Update %v", err)
@@ -104,13 +104,13 @@ func GetStandardVideoLearnRecord(
 	UserID int64, VideoID int64, limit int, offset int, order string) (
 	data []model.LearnRecordResponse, err error) {
 	if order == "" {
-		order = "create_at desc"
+		order = "created_at desc"
 	}
 	err = dao.DB.
 		Model(&model.LearnRecord{}).
 		Select(`learn_record.src_id
 					  learn_record.lip_id
-					  learn_record.create_at
+					  learn_record.created_at
 					  learn_record.result
 					  learn_record.right`).
 		Where("user_id = ? and video_id = ?", UserID, VideoID).

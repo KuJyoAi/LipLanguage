@@ -14,7 +14,7 @@ type LearnRecord struct {
 	Right     bool           `gorm:"right" json:"right,omitempty"`
 	SrcID     string         `gorm:"src_id" json:"video_src,omitempty"`
 	LipID     string         `gorm:"lip_id" json:"video_lip,omitempty"`
-	CreateAt  time.Time      `gorm:"create_at" json:"-"`
+	CreatedAt time.Time      `gorm:"created_at" json:"-"`
 	UpdatedAt time.Time      `gorm:"updated_at" json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"deleted_at, index" json:"-"`
 }
@@ -35,7 +35,7 @@ type LearnStatistics struct {
 	Year      int            `gorm:"year index:idx" json:"-"`
 	Month     int            `gorm:"month index:idx" json:"-"`
 	Day       int            `gorm:"day" json:"-"`
-	CreateAt  time.Time      `gorm:"create_at" json:"-"`
+	CreatedAt time.Time      `gorm:"created_at" json:"-"`
 	UpdatedAt time.Time      `gorm:"updated_at" json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"deleted_at, index" json:"-"`
 }
@@ -57,7 +57,7 @@ type StandardVideoCount struct {
 // RouterCounter 统计路由调用
 type RouterCounter struct {
 	ID        int64          `gorm:"primaryKey" json:"id,omitempty"`
-	CreateAt  time.Time      `gorm:"create_at" json:"-"`
+	CreatedAt time.Time      `gorm:"created_at" json:"-"`
 	UpdatedAt time.Time      `gorm:"updated_at" json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"deleted_at, index" json:"-"`
 	UserID    int64          `gorm:"user_id,index"`

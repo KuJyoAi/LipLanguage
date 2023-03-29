@@ -252,7 +252,7 @@ func UserProfile(ctx *gin.Context) {
 		})
 		return
 	}
-	registerTime := User.CreateAt.Format("2006-01-02 15:04:05")
+	registerTime := User.CreatedAt.Format("2006-01-02 15:04:05")
 	ctx.JSON(http.StatusOK, gin.H{
 		"msg": "获取成功",
 		"data": gin.H{

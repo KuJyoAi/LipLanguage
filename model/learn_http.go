@@ -12,7 +12,7 @@ type StandardVideoResponse struct {
 	Answer     string `json:"answer,omitempty"`
 	SrcID      string `json:"src_id,omitempty"`
 	LipID      string `json:"lip_id,omitempty"`
-	CreateAt   string `json:"create_at,omitempty"`
+	CreatedAt  string `json:"created_at,omitempty"`
 	LearnCount int    `json:"learn_count,omitempty"`
 	LearntTime string `json:"learnt_time,omitempty"`
 }
@@ -28,9 +28,9 @@ type StandardVideoLearnRecordResponse struct {
 
 // LearnRecordResponse 学习记录
 type LearnRecordResponse struct {
-	SrcID    string `json:"src_id,omitempty"`
-	LipID    string `json:"lip_id,omitempty"`
-	Result   string `gorm:"result" json:"result,omitempty"`
-	Right    bool   `gorm:"right" json:"right,omitempty"`
-	CreateAt string `gorm:"create_at" json:"create_at,omitempty"`
+	SrcID     string `json:"src_id,omitempty"`
+	LipID     string `json:"lip_id,omitempty"`
+	Result    string `gorm:"result" json:"result,omitempty"`
+	Right     bool   `gorm:"right" json:"right,omitempty"`
+	CreatedAt string `gorm:"created_at" json:"created_at,omitempty"`
 }

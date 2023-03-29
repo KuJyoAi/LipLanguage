@@ -7,7 +7,7 @@ import (
 
 type User struct {
 	ID            int64          `gorm:"primaryKey" json:"id,omitempty"`
-	CreateAt      time.Time      `json:"-"`
+	CreatedAt     time.Time      `json:"-"`
 	UpdatedAt     time.Time      `json:"-"`
 	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
 	AvatarUrl     string         `gorm:"avatar_url"`

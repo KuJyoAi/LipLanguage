@@ -11,7 +11,6 @@ import (
 )
 
 func Register(Phone int64, Password string) (string, error) {
-
 	User := model.User{
 		AvatarUrl:     "",
 		Phone:         Phone,
@@ -20,7 +19,7 @@ func Register(Phone int64, Password string) (string, error) {
 		Password:      dao.Hash256(Password),
 		HearingDevice: false,
 		Gender:        0,
-		BirthDay:      time.Date(2050, 1, 1, 0, 0, 0, 0, time.UTC),
+		BirthDay:      time.Now(),
 	}
 
 	err := user.Create(&User)

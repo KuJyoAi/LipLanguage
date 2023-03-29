@@ -11,7 +11,7 @@ type StandardVideo struct {
 	Answer    string         `gorm:"answer" json:"answer"`
 	SrcID     string         `gorm:"src_id" json:"src_id"`
 	LipID     string         `gorm:"lip_id" json:"lip_id"`
-	CreateAt  time.Time      `json:"-"`
+	CreatedAt time.Time      `json:"-"`
 	UpdatedAt time.Time      `json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }

@@ -12,7 +12,7 @@ func GetStandardVideo(ID int64) (model.StandardVideo, error) {
 					  standard_video.answer,
 					  standard_video.src_id,
 					  standard_video.lip_id,	
-					  standard_video.create_at,	
+					  standard_video.created_at,	
 					  standard_video_count.learn_count,	
 					  standard_video_count.learnt_time`).
 		Joins(`LEFT JOIN standard_video_count
@@ -33,7 +33,7 @@ func GetAllStandardVideos(limit int, offset int, Order string) ([]model.Standard
 		              standard_video.answer,
 					  standard_video.src_id,
 					  standard_video.lip_id,
-					  standard_video.create_at,
+					  standard_video.created_at,
 					  standard_video_count.learn_count,
  					  standard_video_count.learnt_time`).
 		Joins(`LEFT JOIN standard_video_count

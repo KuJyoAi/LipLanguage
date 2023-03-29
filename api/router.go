@@ -24,7 +24,7 @@ func Router(r *gin.Engine) {
 		learn := api.Group("learn")
 		learn.Use(midware.Auth)
 		{
-			learn.GET("/getStandards", GetStandardVideos)
+			learn.POST("/getStandards", GetStandardVideos)
 			learn.POST("/standardHistory", GetStandardVideoLearnHistory)
 			learn.POST("/train", UploadTrainVideo)
 

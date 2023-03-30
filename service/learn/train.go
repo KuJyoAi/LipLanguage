@@ -30,18 +30,21 @@ func UploadTrainVideo(phone int64, VideoID int64, data []byte) (ret model.AiPost
 		logrus.Errorf("[service] PostToAi %v", err)
 		return ret, err
 	}
+
 	// 保存训练视频
 	lipVideo, err := dao.CreateResourceData(AiRes.Data)
 	if err != nil {
 		logrus.Errorf("[service] CreateResourceData%v", err)
 		return ret, errors.New("创建训练视频失败")
 	}
+
 	// 获取标准视频
 	standard, err := learn.GetStandardVideo(VideoID)
 	if err != nil {
 		logrus.Errorf("[service] GetStandardVideo %v", err)
 		return ret, err
 	}
+	
 	// 保存训练记录
 	record := model.LearnRecord{
 		UserID:  User.ID,

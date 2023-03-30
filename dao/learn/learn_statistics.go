@@ -57,11 +57,12 @@ func GetLastStatisticsByUserID(userID int64) (ret model.LearnStatistics, err err
 
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			// 创建第一条统计数据
+			// 创建第一条统计数据, 30年前避免和今日数据冲突
+			now := time.Now().AddDate(-30, 0, 0)
 			ret = model.LearnStatistics{
-				Year:   time.Now().Year(),
-				Month:  int(time.Now().Month()),
-				Day:    time.Now().Day() - 1,
+				Year:   now.Year(),
+				Month:  int(now.Month()),
+				Day:    now.Day(),
 				UserID: userID,
 			}
 			err = dao.DB.Create(&ret).Error

@@ -32,10 +32,10 @@ type LearnStatistics struct {
 	TotalTime   int `gorm:"total_time" json:"total_time"`
 
 	// 查询条件
-	Year      int            `gorm:"year index:idx" json:"-"`
-	Month     int            `gorm:"month index:idx" json:"-"`
-	Day       int            `gorm:"day" json:"-"`
-	CreatedAt time.Time      `gorm:"created_at"`
+	Year      int            `gorm:"year index:idx"`
+	Month     int            `gorm:"month index:idx"`
+	Day       int            `gorm:"day"`
+	CreatedAt time.Time      `gorm:"created_at" json:"-"`
 	UpdatedAt time.Time      `gorm:"updated_at" json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"deleted_at, index" json:"-"`
 }

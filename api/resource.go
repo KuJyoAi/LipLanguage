@@ -10,10 +10,9 @@ import (
 
 func GetResource(ctx *gin.Context) {
 	SrcID := ctx.PostForm("src_id")
+	logrus.Infof("GetResource %v", SrcID)
 	if SrcID == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"msg": "参数不合法",
-		})
+		Response(ctx, http.StatusBadRequest, "参数错误", nil)
 		return
 	}
 
@@ -21,16 +20,12 @@ func GetResource(ctx *gin.Context) {
 	if err != nil {
 		logrus.Errorf("[api.GetResource]%v", err)
 		if err == gorm.ErrRecordNotFound {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"msg": "没有此资源",
-			})
+			Response(ctx, http.StatusNotFound, "资源不存在", data)
 			return
 		} else {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"msg":  "内部错误",
-				"data": data,
-			})
+			Response(ctx, http.StatusInternalServerError, "服务端错误", data)
 			return
 		}
 	}
+	Response(ctx, http.StatusOK, "获取成功", data)
 }

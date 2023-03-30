@@ -2,11 +2,22 @@ package api
 
 import (
 	"LipLanguage/midware"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"time"
 )
 
 func Router(r *gin.Engine) {
-	r.Use(midware.CORS) // 处理跨域问题
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"https://www.jczlipread.cn, http://localhost:3000, https://jczlipread.cn"},
+		AllowMethods:     []string{"PUT", "POST", "GET", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			return true
+		},
+		MaxAge: 12 * time.Hour})) // 处理跨域问题
 	api := r.Group("api")
 	{
 		user := api.Group("user")

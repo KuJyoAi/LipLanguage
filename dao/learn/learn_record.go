@@ -88,6 +88,7 @@ func SyncBasedOnLearnRecord(record model.LearnRecord, tx *gorm.DB) error {
 		logrus.Errorf("[dao.SyncBasedOnLearnRecord] StandardVideoCount Take %v", err)
 		return err
 	}
+	logrus.Infof("[dao.SyncBasedOnLearnRecord] StandardVideoCount Take %v", err)
 	err = tx.Model(&model.StandardVideoCount{}).
 		Where("user_id = ? and video_id = ?", record.UserID, record.VideoID).
 		Update("learn_count", gorm.Expr("learn_count + ?", 1)).

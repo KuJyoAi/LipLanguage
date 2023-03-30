@@ -14,7 +14,7 @@ type StandardVideoResponse struct {
 	LipID      string `json:"lip_id"`
 	CreatedAt  string `json:"created_at"`
 	LearnCount int    `json:"learn_count"`
-	LearntTime string `json:"learnt_time"`
+	LearnTime  int    `json:"learn_time"`
 }
 
 // StandardVideoLearnRecordResponse 标准视频的学习记录

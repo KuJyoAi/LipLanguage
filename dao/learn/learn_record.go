@@ -80,7 +80,7 @@ func SyncBasedOnLearnRecord(record model.LearnRecord, tx *gorm.DB) error {
 	err = tx.Model(&model.StandardVideoCount{}).
 		Where("user_id = ? and video_id = ?", record.UserID, record.VideoID).
 		First(&SVCount).Error
-	if err != gorm.ErrRecordNotFound {
+	if err == gorm.ErrRecordNotFound {
 		// 如果没有记录, 则创建一条记录
 		SVCount = model.StandardVideoCount{
 			UserID:     record.UserID,

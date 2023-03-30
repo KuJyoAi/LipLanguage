@@ -121,10 +121,10 @@ func GetStandardVideoLearnRecord(
 	}
 	err = dao.DB.
 		Model(&model.LearnRecord{}).
-		Select(`learn_records.src_id
-					  learn_records.lip_id
-					  learn_records.created_at
-					  learn_records.result
+		Select(`learn_records.src_id,
+					  learn_records.lip_id,
+					  learn_records.created_at,
+					  learn_records.result,
 					  learn_records.right`).
 		Where("user_id = ? and video_id = ?", UserID, VideoID).
 		Order(order).

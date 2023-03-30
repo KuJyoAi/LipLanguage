@@ -14,8 +14,8 @@ func Router(r *gin.Engine) {
 			"http://localhost:3000",
 			"https://jczlipread.cn"},
 		AllowMethods:     []string{"PUT", "POST", "GET", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin"},
-		ExposeHeaders:    []string{"Content-Length"},
+		AllowHeaders:     []string{"Origin", "Cookie"},
+		ExposeHeaders:    []string{"Content-Length", "Cookie"},
 		AllowCredentials: true,
 		AllowOriginFunc: func(origin string) bool {
 			return true

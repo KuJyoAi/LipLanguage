@@ -76,25 +76,31 @@ func SyncBasedOnLearnRecord(record model.LearnRecord, tx *gorm.DB) error {
 	}
 
 	// 2. StandardVideoCount表
+	var SVCount model.StandardVideoCount
 	err = tx.Model(&model.StandardVideoCount{}).
 		Where("user_id = ? and video_id = ?", record.UserID, record.VideoID).
-		FirstOrCreate(&model.StandardVideoCount{
+		First(&SVCount).Error
+	if err != gorm.ErrRecordNotFound {
+		// 如果没有记录, 则创建一条记录
+		SVCount = model.StandardVideoCount{
 			UserID:     record.UserID,
 			VideoID:    record.VideoID,
-			LearnCount: 0,
 			LearnTime:  0,
-		}).Error
+			LearnCount: 0,
+		}
+		err = tx.Create(&SVCount).Error
+	}
+
 	if err != nil {
 		logrus.Errorf("[dao.SyncBasedOnLearnRecord] StandardVideoCount Take %v", err)
 		return err
 	}
-	logrus.Infof("[dao.SyncBasedOnLearnRecord] StandardVideoCount Take %v", err)
-	err = tx.Model(&model.StandardVideoCount{}).
-		Where("user_id = ? and video_id = ?", record.UserID, record.VideoID).
-		Update("learn_count", gorm.Expr("learn_count + ?", 1)).
-		Update("learn_time",
-			gorm.Expr("learn_time + ?", record.CreatedAt.Sub(lastRecord.CreatedAt).Minutes()+1)).
-		Error
+
+	logrus.Infof("[dao.SyncBasedOnLearnRecord] StandardVideoCount Take %+v", SVCount)
+	learnSeconds := int(record.CreatedAt.Sub(lastRecord.CreatedAt).Seconds())
+	SVCount.LearnTime += (learnSeconds / 60) + 1
+	SVCount.LearnCount += 1
+	err = tx.Save(&SVCount).Error
 	if err != nil {
 		logrus.Errorf("[dao.SyncBasedOnLearnRecord] StandardVideoCount Update %v", err)
 	}

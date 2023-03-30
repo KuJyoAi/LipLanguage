@@ -97,8 +97,14 @@ func SyncBasedOnLearnRecord(record model.LearnRecord, tx *gorm.DB) error {
 	}
 
 	logrus.Infof("[dao.SyncBasedOnLearnRecord] StandardVideoCount Take %+v", SVCount)
-	learnSeconds := int(record.CreatedAt.Sub(lastRecord.CreatedAt).Seconds())
-	SVCount.LearnTime += (learnSeconds / 60) + 1
+	// 如果有上一条记录, 则今日学习时长为本次学习时间减去上一次学习时间, 单位为min
+	// 10min外的学习记录不计入今日学习时长
+	// 不足1min的学习记录按1min计算
+	if record.CreatedAt.Sub(lastRecord.CreatedAt) <= 10*time.Minute {
+		learnSeconds := int(record.CreatedAt.Sub(lastRecord.CreatedAt).Seconds())
+		SVCount.LearnTime += learnSeconds / 60
+	}
+	SVCount.LearnTime += 1
 	SVCount.LearnCount += 1
 	err = tx.Save(&SVCount).Error
 	if err != nil {

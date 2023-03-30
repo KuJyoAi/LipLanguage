@@ -3,6 +3,7 @@ package api
 import (
 	"LipLanguage/dao"
 	"LipLanguage/dao/user"
+	"LipLanguage/midware"
 	"LipLanguage/model"
 	"LipLanguage/service"
 	"github.com/gin-gonic/gin"
@@ -145,8 +146,7 @@ func UserInfoUpdate(ctx *gin.Context) {
 		})
 		return
 	}
-
-	token, _ := ctx.Cookie("auth")
+	token := midware.FromReqGetToken(ctx)
 	err = service.UserInfoUpdate(token, info)
 
 	if err != nil {
@@ -199,7 +199,7 @@ func UserUpdatePhone(ctx *gin.Context) {
 		return
 	}
 	NumPhone, err := strconv.Atoi(param.Phone)
-	token, _ := ctx.Cookie("auth")
+	token := midware.FromReqGetToken(ctx)
 	if service.UserUpdatePhone(token, int64(NumPhone)) {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"msg": "改绑成功",
@@ -225,7 +225,7 @@ func UserUpdatePassword(ctx *gin.Context) {
 		return
 	}
 
-	token, _ := ctx.Cookie("auth")
+	token := midware.FromReqGetToken(ctx)
 	if service.UserUpdatePassword(token, param.OldPassword, param.NewPassword) {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"msg": "修改成功",
@@ -240,8 +240,7 @@ func UserUpdatePassword(ctx *gin.Context) {
 }
 
 func UserProfile(ctx *gin.Context) {
-	token, _ := ctx.Cookie("auth")
-	claim, _ := dao.ParseToken(token)
+	claim := midware.FromReqGetClaims(ctx)
 
 	logrus.Infof("[api.UserProfile] %v", claim)
 	User, err := service.UserGetProfile(claim.Phone)

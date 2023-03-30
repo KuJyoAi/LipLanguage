@@ -14,13 +14,14 @@ func Router(r *gin.Engine) {
 			"http://localhost:3000",
 			"https://jczlipread.cn"},
 		AllowMethods:     []string{"PUT", "POST", "GET", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Cookie"},
+		AllowHeaders:     []string{"Origin", "Cookie", "X-Requested-With"},
 		ExposeHeaders:    []string{"Content-Length", "Cookie"},
 		AllowCredentials: true,
 		AllowOriginFunc: func(origin string) bool {
 			return true
 		},
 		MaxAge: 12 * time.Hour})) // 处理跨域问题
+
 	api := r.Group("api")
 	{
 		user := api.Group("user")
@@ -29,7 +30,7 @@ func Router(r *gin.Engine) {
 			user.POST("/login", Login)
 			user.POST("/update", midware.Auth, UserInfoUpdate)
 			user.POST("/verify", UserVerify)
-			user.POST("/resetpassword", midware.Auth, ResetPassword)
+			user.POST("/resetpassword", ResetPassword)
 			user.POST("/updatephone", midware.Auth, UserUpdatePhone)
 			user.POST("/updatepassword", midware.Auth, UserUpdatePassword)
 			user.POST("/profile", midware.Auth, UserProfile)

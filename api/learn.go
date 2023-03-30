@@ -1,7 +1,7 @@
 package api
 
 import (
-	"LipLanguage/dao"
+	"LipLanguage/midware"
 	"LipLanguage/service/learn"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -30,8 +30,7 @@ func UploadTrainVideo(ctx *gin.Context) {
 		return
 	}
 
-	token, _ := ctx.Cookie("auth")
-	claim, _ := dao.ParseToken(token)
+	claim := midware.FromReqGetClaims(ctx)
 
 	res, err := learn.UploadTrainVideo(claim.Phone, int64(VideoID), videoData)
 
@@ -47,8 +46,7 @@ func UploadTrainVideo(ctx *gin.Context) {
 }
 
 func GetTodayStatistic(ctx *gin.Context) {
-	token, _ := ctx.Cookie("auth")
-	claim, _ := dao.ParseToken(token)
+	claim := midware.FromReqGetClaims(ctx)
 
 	data, err := learn.GetTodayStatistic(claim.UserID)
 
@@ -71,11 +69,10 @@ func GetMonthRecord(ctx *gin.Context) {
 		Response(ctx, http.StatusBadRequest, "参数错误", nil)
 		return
 	}
-	token, _ := ctx.Cookie("auth")
-	claim, _ := dao.ParseToken(token)
+	claim := midware.FromReqGetClaims(ctx)
 
 	data, err := learn.GetMonthStatistic(claim.UserID, Year, Month)
-	
+
 	if err != nil {
 		logrus.Errorf("[api.GetMonthRecord] %v", err)
 		Response(ctx, http.StatusInternalServerError, "内部错误", nil)
@@ -98,8 +95,7 @@ func GetStandardVideoLearnHistory(ctx *gin.Context) {
 		return
 	}
 
-	token, _ := ctx.Cookie("auth")
-	claim, _ := dao.ParseToken(token)
+	claim := midware.FromReqGetClaims(ctx)
 
 	data, err := learn.GetStandardVideoLearnRecord(claim.UserID, int64(VideoID), Limit, Offset, Order)
 

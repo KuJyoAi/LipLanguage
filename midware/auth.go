@@ -9,13 +9,30 @@ import (
 	"net/http"
 )
 
+func FromReqGetToken(ctx *gin.Context) string {
+	token := ctx.PostForm("auth")
+	return token
+}
+func FromReqGetClaims(ctx *gin.Context) dao.Claim {
+	token := ctx.PostForm("auth")
+	c, err := dao.ParseToken(token)
+	if err != nil {
+		logrus.Infof("[midware] ParseToken %v", err)
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"msg":  "token无效",
+			"data": gin.H{},
+		})
+	}
+	return *c
+}
+
 func Auth(ctx *gin.Context) {
 	logrus.Infof("[midware] Auth %v", ctx.Request.URL.Path)
 	logrus.Infof("[midware] Cookies %v", ctx.Request.Cookies())
-	token, err := ctx.Cookie("auth")
+	token := ctx.PostForm("auth")
 
-	if err != nil {
-		logrus.Infof("[midware] Cookie %v", err)
+	if token == "" {
+		logrus.Infof("[midware] Cookie %v", token)
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"msg":  "No Token!",
 			"data": gin.H{},

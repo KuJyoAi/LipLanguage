@@ -11,7 +11,9 @@ import (
 
 func Auth(ctx *gin.Context) {
 	logrus.Infof("[midware] Auth %v", ctx.Request.URL.Path)
+	logrus.Infof("[midware] Cookies %v", ctx.Request.Cookies())
 	token, err := ctx.Cookie("auth")
+
 	if err != nil {
 		logrus.Infof("[midware] Cookie %v", err)
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{

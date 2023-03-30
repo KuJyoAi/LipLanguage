@@ -9,7 +9,10 @@ import (
 
 func Router(r *gin.Engine) {
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://www.jczlipread.cn, http://localhost:3000, https://jczlipread.cn"},
+		AllowOrigins: []string{
+			"https://www.jczlipread.cn",
+			"http://localhost:3000",
+			"https://jczlipread.cn"},
 		AllowMethods:     []string{"PUT", "POST", "GET", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -29,7 +32,7 @@ func Router(r *gin.Engine) {
 			user.POST("/resetpassword", midware.Auth, ResetPassword)
 			user.POST("/updatephone", midware.Auth, UserUpdatePhone)
 			user.POST("/updatepassword", midware.Auth, UserUpdatePassword)
-			user.GET("/profile", midware.Auth, UserProfile)
+			user.POST("/profile", midware.Auth, UserProfile)
 		}
 
 		learn := api.Group("learn")

@@ -10,6 +10,7 @@ import (
 )
 
 func Auth(ctx *gin.Context) {
+	logrus.Infof("[midware] Auth %v", ctx.Request.URL.Path)
 	token, err := ctx.Cookie("auth")
 	if err != nil {
 		logrus.Infof("[midware] Cookie %v", err)
@@ -54,12 +55,12 @@ func Auth(ctx *gin.Context) {
 
 // CORS 跨域问题
 func CORS(context *gin.Context) {
+	logrus.Infof("[midware] CORS %v, Origin %v", context.Request.URL.Path, context.GetHeader("Origin")
 	method := context.Request.Method
 	// 1. [必须]接受指定域的请求，可以使用*不加以限制，但不安全
 	//context.Header("Access-Control-Allow-Origin", "*")
 	context.Header("Access-Control-Allow-Origin", "http://localhost:3000, https://jczlipread.cn/")
 	//fmt.Println(context.GetHeader("Origin"))
-	logrus.Infof("Origin: %v", context.GetHeader("Origin"))
 	// 2. [必须]设置服务器支持的所有跨域请求的方法
 	context.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 	// 3. [可选]服务器支持的所有头信息字段，不限于浏览器在"预检"中请求的字段

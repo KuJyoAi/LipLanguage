@@ -21,21 +21,21 @@ type LearnRecord struct {
 
 // LearnStatistics 学习数据统计
 type LearnStatistics struct {
-	ID     int64 `gorm:"primaryKey" json:"id,omitempty"`
-	UserID int64 `gorm:"user_id,index"`
+	ID     int64 `gorm:"primaryKey" json:"id"`
+	UserID int64 `gorm:"user_id,index" json:"user_id"`
 
 	// 学习情况
-	TodayLearn  int `gorm:"today_learn"`
-	TodayMaster int `gorm:"today_master"`
-	TotalLearn  int `gorm:"total_learn"`
-	TodayTime   int `gorm:"today_time"`
-	TotalTime   int `gorm:"total_time"`
+	TodayLearn  int `gorm:"today_learn" json:"today_learn"`
+	TodayMaster int `gorm:"today_master" json:"today_master"`
+	TotalLearn  int `gorm:"total_learn" json:"total_learn"`
+	TodayTime   int `gorm:"today_time" json:"today_time"`
+	TotalTime   int `gorm:"total_time" json:"total_time"`
 
 	// 查询条件
 	Year      int            `gorm:"year index:idx" json:"-"`
 	Month     int            `gorm:"month index:idx" json:"-"`
 	Day       int            `gorm:"day" json:"-"`
-	CreatedAt time.Time      `gorm:"created_at" json:"-"`
+	CreatedAt time.Time      `gorm:"created_at"`
 	UpdatedAt time.Time      `gorm:"updated_at" json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"deleted_at, index" json:"-"`
 }

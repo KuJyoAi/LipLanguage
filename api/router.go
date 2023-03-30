@@ -2,9 +2,10 @@ package api
 
 import (
 	"LipLanguage/midware"
+	"time"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"time"
 )
 
 func Router(r *gin.Engine) {
@@ -14,8 +15,8 @@ func Router(r *gin.Engine) {
 			"http://localhost:3000",
 			"https://jczlipread.cn"},
 		AllowMethods:     []string{"PUT", "POST", "GET", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Cookie", "X-Requested-With"},
-		ExposeHeaders:    []string{"Content-Length", "Cookie"},
+		AllowHeaders:     []string{"Origin", "Cookie", "X-Requested-With", "auth"},
+		ExposeHeaders:    []string{"Content-Length", "Cookie", "auth"},
 		AllowCredentials: true,
 		AllowOriginFunc: func(origin string) bool {
 			return true

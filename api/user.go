@@ -6,11 +6,12 @@ import (
 	"LipLanguage/midware"
 	"LipLanguage/model"
 	"LipLanguage/service"
-	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 func Register(ctx *gin.Context) {

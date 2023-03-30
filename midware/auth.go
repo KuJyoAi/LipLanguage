@@ -4,17 +4,24 @@ import (
 	"LipLanguage/dao"
 	"LipLanguage/dao/user"
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
 func FromReqGetToken(ctx *gin.Context) string {
 	token := ctx.PostForm("auth")
+	if token == "" {
+		token = ctx.GetHeader("auth")
+	}
 	return token
 }
 func FromReqGetClaims(ctx *gin.Context) dao.Claim {
 	token := ctx.PostForm("auth")
+	if token == "" {
+		token = ctx.GetHeader("auth")
+	}
 	c, err := dao.ParseToken(token)
 	if err != nil {
 		logrus.Infof("[midware] ParseToken %v", err)
@@ -27,16 +34,17 @@ func FromReqGetClaims(ctx *gin.Context) dao.Claim {
 }
 
 func Auth(ctx *gin.Context) {
-	logrus.Infof("[midware] Auth %v", ctx.Request.URL.Path)
-	logrus.Infof("[midware] Cookies %v", ctx.Request.Cookies())
+
 	token := ctx.PostForm("auth")
 
 	if token == "" {
-		logrus.Infof("[midware] Cookie %v", token)
-		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"msg":  "No Token!",
-			"data": gin.H{},
-		})
+		token = ctx.GetHeader("auth")
+		if token == "" {
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"msg":  "No Token!",
+				"data": gin.H{},
+			})
+		}
 		return
 	}
 

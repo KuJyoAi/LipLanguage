@@ -28,8 +28,8 @@ type StandardVideoLearnRecordResponse struct {
 
 // LearnRecordResponse 学习记录
 type LearnRecordResponse struct {
-	SrcID     string `json:"src_id"`
-	LipID     string `json:"lip_id"`
+	SrcID     string `gorm:"src_id" json:"src_id"`
+	LipID     string `gorm:"lip_id" json:"lip_id"`
 	Result    string `gorm:"result" json:"result"`
 	Right     bool   `gorm:"right" json:"right"`
 	CreatedAt string `gorm:"created_at" json:"created_at"`

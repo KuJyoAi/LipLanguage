@@ -3,6 +3,7 @@ package learn
 import (
 	"LipLanguage/dao"
 	"LipLanguage/model"
+	"fmt"
 )
 
 func GetStandardVideo(ID int64) (model.StandardVideo, error) {
@@ -37,8 +38,8 @@ func GetAllStandardVideos(UserID int64, limit int, offset int, Order string) ([]
 					  standard_video_counts.learn_count,
  					  standard_video_counts.learn_time`).
 		Joins(`LEFT JOIN standard_video_counts
-                     ON standard_videos.id = standard_video_counts.video_id`).
-		Where("standard_videos.user_id = ?", UserID).
+                     ON standard_videos.id = standard_video_counts.video_id 
+					 AND standard_video_counts.user_id = ` + fmt.Sprint(UserID)).
 		Limit(limit).
 		Offset(offset).
 		Order(Order).

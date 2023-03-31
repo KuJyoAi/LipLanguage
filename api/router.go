@@ -55,7 +55,7 @@ func Router(r *gin.Engine) {
 			manager.POST("/uploadStandard", UploadStandardVideo)
 		}
 
-		api.GET("/resource", midware.Auth, GetResource)
+		api.POST("/resource", midware.Auth, GetResource)
 	}
 
 	// 测试页面

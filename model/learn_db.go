@@ -21,7 +21,7 @@ type LearnRecord struct {
 
 // LearnStatistics 学习数据统计
 type LearnStatistics struct {
-	ID     int64 `gorm:"primaryKey" json:"id"`
+	ID     int64 `gorm:"primaryKey" json:"-"`
 	UserID int64 `gorm:"user_id,index" json:"user_id"`
 
 	// 学习情况

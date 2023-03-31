@@ -23,9 +23,9 @@ func PostToAi(data []byte) (ret model.AiPostResponse, err error) {
 	defer AiLock.Unlock()
 
 	// 请求部分:
+	body := &bytes.Buffer{}
 	URL := common.AIUrl
 	file := bytes.NewReader(data)
-	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 	part, err := writer.CreateFormFile("video", "file.webm")
 	if err != nil {

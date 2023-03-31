@@ -120,7 +120,8 @@ func GetStandardVideos(ctx *gin.Context) {
 		return
 	}
 
-	data, err := learn.GetAllStandardVideos(Limit, Offset, Order)
+	claims := midware.FromReqGetClaims(ctx)
+	data, err := learn.GetAllStandardVideos(claims.UserID, Limit, Offset, Order)
 
 	if err != nil {
 		logrus.Errorf("[api.GetAllStandardVideos] %v", err)

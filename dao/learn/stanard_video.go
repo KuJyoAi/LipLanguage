@@ -22,7 +22,7 @@ func GetStandardVideo(ID int64) (model.StandardVideo, error) {
 	return ret, err
 }
 
-func GetAllStandardVideos(limit int, offset int, Order string) ([]model.StandardVideoResponse, error) {
+func GetAllStandardVideos(UserID int64, limit int, offset int, Order string) ([]model.StandardVideoResponse, error) {
 	var ret []model.StandardVideoResponse
 	// 默认按照ID升序
 	if Order == "" {
@@ -38,6 +38,7 @@ func GetAllStandardVideos(limit int, offset int, Order string) ([]model.Standard
  					  standard_video_counts.learn_time`).
 		Joins(`LEFT JOIN standard_video_counts
                      ON standard_videos.id = standard_video_counts.video_id`).
+		Where("standard_videos.user_id = ?", UserID).
 		Limit(limit).
 		Offset(offset).
 		Order(Order).

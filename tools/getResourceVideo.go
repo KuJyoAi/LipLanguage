@@ -39,6 +39,7 @@ func main() {
 		data, _ := io.ReadAll(f)
 		target, _ := os.Create(fmt.Sprintf("/root/src/tmp/%v_%v.webm", r.Result, r.SrcID))
 		_, err := target.Write(data)
+
 		if err != nil {
 			logrus.Errorf("write file error: %v", err)
 		}

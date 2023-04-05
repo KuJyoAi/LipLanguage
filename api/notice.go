@@ -3,10 +3,11 @@ package api
 import (
 	"LipLanguage/midware"
 	"LipLanguage/service"
-	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 func UserGetNotice(ctx *gin.Context) {
@@ -33,7 +34,7 @@ func UserGetNotice(ctx *gin.Context) {
 }
 
 func UserReadNotice(ctx *gin.Context) {
-	noticeIDStr := ctx.PostForm("noticeID")
+	noticeIDStr := ctx.PostForm("notice_id")
 	noticeID, err := strconv.Atoi(noticeIDStr)
 	if err != nil {
 		logrus.Errorf("[api.UserReadNotice] %v", err)
@@ -48,6 +49,6 @@ func UserReadNotice(ctx *gin.Context) {
 		Response(ctx, http.StatusInternalServerError, "服务端错误", nil)
 		return
 	} else {
-		Response(ctx, http.StatusOK, "已读", nil)
+		Response(ctx, http.StatusOK, "已读成功", nil)
 	}
 }

@@ -36,6 +36,7 @@ func Router(r *gin.Engine) {
 			user.POST("/updatepassword", midware.Auth, UserUpdatePassword)
 			user.POST("/profile", midware.Auth, UserProfile)
 			user.POST("/getnotice", midware.Auth, UserGetNotice)
+			user.POST("/readnotice", midware.Auth, UserReadNotice)
 		}
 
 		learn := api.Group("learn")

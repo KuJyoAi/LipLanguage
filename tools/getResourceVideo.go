@@ -1,19 +1,20 @@
-package tools
+package main
 
 import (
 	"LipLanguage/model"
 	"fmt"
+	"io"
+	"os"
+
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"io"
-	"os"
 )
 
 func main() {
 	// 连接数据库
 	dsn := fmt.Sprintf(
-		"root:deepkw_lip@tcp(127.0.0.1:3306)/lipread?charset=utf8mb4&parseTime=True&loc=Local",
+		"root:deepkw_lipread@tcp(127.0.0.1:3306)/lipread?charset=utf8mb4&parseTime=True&loc=Local",
 	)
 	DB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {

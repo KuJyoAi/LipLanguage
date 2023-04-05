@@ -10,14 +10,14 @@ func GetNotice(UserID int64, limit int, offset int, read string) (notice []model
 		err = dao.DB.
 			Where("user_id = ? AND status = ?", UserID, 0).
 			Limit(limit).Offset(offset).
-			Order("create_time DESC").
+			Order("created_time DESC").
 			Find(&notice).Error
 		return
 	} else {
 		err = dao.DB.
 			Where("user_id = ?", UserID).
 			Limit(limit).Offset(offset).
-			Order("create_time DESC").
+			Order("created_time DESC").
 			Find(&notice).Error
 		return
 	}

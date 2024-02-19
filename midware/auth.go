@@ -23,9 +23,9 @@ func Auth(ctx *gin.Context) {
 	}
 
 	//解析token
-	claims, err := utils.ParseToken(token)
+	claims, err := utils.VerifyJWT(token)
 	if err != nil {
-		logrus.Infof("[midware] ParseToken %v", err)
+		logrus.Infof("[midware] VerifyJWT %v", err)
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 			"msg": "token无效",
 		})

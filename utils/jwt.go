@@ -3,7 +3,7 @@ package utils
 import (
 	"crypto/sha256"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/sirupsen/logrus"
 	"time"
 )
@@ -14,7 +14,7 @@ const (
 )
 
 type Claim struct {
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 	Phone    int64
 	Nickname string
 	UserID   uint
@@ -25,8 +25,8 @@ func GenerateToken(Phone int64, Nickname string, UserID uint) (string, error) {
 		Phone:    Phone,
 		Nickname: Nickname,
 		UserID:   UserID,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(JwtExpireTime).Unix(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(JwtExpireTime)),
 		},
 	}
 
@@ -39,22 +39,20 @@ func GenerateToken(Phone int64, Nickname string, UserID uint) (string, error) {
 	return token, err
 }
 
-func ParseToken(token string) (*Claim, error) {
+func VerifyJWT(token string) (*Claim, error) {
 	TokenClaim, err := jwt.ParseWithClaims(token, &Claim{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(JwtKey), nil
 	})
 	if err != nil {
-		logrus.Errorf("[util.ParseToken] %v", err)
+		logrus.Errorf("[util.VerifyJWT] %v", err)
 		return nil, err
-	}
-
-	if TokenClaim != nil {
+	} else if TokenClaim != nil {
 		if c, ok := TokenClaim.Claims.(*Claim); ok && TokenClaim.Valid {
 			return c, nil
 		}
 	}
 
-	logrus.Debugf("[util.ParseToken] %v,\n %v", err, TokenClaim)
+	logrus.Debugf("[util.VerifyJWT] %v,\n %v", err, TokenClaim)
 	return nil, err
 }
 

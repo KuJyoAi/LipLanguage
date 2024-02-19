@@ -1,12 +1,12 @@
 package learn
 
 import (
-	"LipLanguage/dao"
-	"LipLanguage/dao/learn"
-	"LipLanguage/dao/user"
-	"LipLanguage/model"
 	"errors"
 	"github.com/sirupsen/logrus"
+	"jcz-backend/dao"
+	"jcz-backend/dao/learn"
+	"jcz-backend/dao/user"
+	"jcz-backend/model"
 )
 
 // UploadTrainVideo 上传训练视频, 并返回结果
@@ -44,7 +44,7 @@ func UploadTrainVideo(phone int64, VideoID int64, data []byte) (ret model.AiPost
 		logrus.Errorf("[service] GetStandardVideo %v", err)
 		return ret, err
 	}
-	
+
 	// 保存训练记录
 	record := model.LearnRecord{
 		UserID:  User.ID,

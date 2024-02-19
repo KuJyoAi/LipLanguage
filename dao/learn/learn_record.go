@@ -1,10 +1,10 @@
 package learn
 
 import (
-	"LipLanguage/dao"
-	"LipLanguage/model"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"jcz-backend/dao"
+	"jcz-backend/model"
 	"time"
 )
 

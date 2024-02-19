@@ -1,8 +1,8 @@
 package user
 
 import (
-	"LipLanguage/dao"
-	"LipLanguage/model"
+	"jcz-backend/dao"
+	"jcz-backend/model"
 )
 
 func GetByPhone(phone int64) (*model.User, error) {

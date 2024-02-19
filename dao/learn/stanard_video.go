@@ -1,9 +1,9 @@
 package learn
 
 import (
-	"LipLanguage/dao"
-	"LipLanguage/model"
 	"fmt"
+	"jcz-backend/dao"
+	"jcz-backend/model"
 )
 
 func GetStandardVideo(ID int64) (model.StandardVideo, error) {

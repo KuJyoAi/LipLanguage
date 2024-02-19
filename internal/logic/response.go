@@ -1,4 +1,4 @@
-package api
+package logic
 
 import "github.com/gin-gonic/gin"
 

@@ -1,9 +1,9 @@
-package main
+package utils
 
 import (
-	"LipLanguage/model"
 	"fmt"
 	"io"
+	"jcz-backend/model"
 	"os"
 
 	"github.com/sirupsen/logrus"

@@ -1,9 +1,9 @@
 package service
 
 import (
-	"LipLanguage/dao/user"
-	"LipLanguage/model"
 	"github.com/sirupsen/logrus"
+	"jcz-backend/dao/user"
+	"jcz-backend/model"
 )
 
 func GetNotice(UserID int64, limit int, offset int, read string) (notice []model.Notice, err error) {

@@ -1,8 +1,8 @@
 package user
 
 import (
-	"LipLanguage/dao"
-	"LipLanguage/model"
+	"jcz-backend/dao"
+	"jcz-backend/model"
 )
 
 func GetNotice(UserID int64, limit int, offset int, read string) (notice []model.Notice, err error) {

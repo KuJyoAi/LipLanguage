@@ -1,9 +1,9 @@
 package learn
 
 import (
-	"LipLanguage/dao"
-	"LipLanguage/model"
 	"gorm.io/gorm"
+	"jcz-backend/dao"
+	"jcz-backend/model"
 	"time"
 )
 

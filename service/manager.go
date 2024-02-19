@@ -1,9 +1,9 @@
 package service
 
 import (
-	"LipLanguage/dao"
-	"LipLanguage/model"
 	"github.com/sirupsen/logrus"
+	"jcz-backend/dao"
+	"jcz-backend/model"
 )
 
 func UploadStandardVideo(answer string, video []byte, lip []byte) (Video string, Lip string, err error) {

@@ -1,8 +1,8 @@
 package learn
 
 import (
-	"LipLanguage/dao/learn"
-	"LipLanguage/model"
+	"jcz-backend/dao/learn"
+	"jcz-backend/model"
 )
 
 func GetStandardVideoLearnRecord(

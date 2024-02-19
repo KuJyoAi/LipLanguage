@@ -1,9 +1,9 @@
 package learn
 
 import (
-	"LipLanguage/dao/learn"
-	"LipLanguage/model"
 	"github.com/sirupsen/logrus"
+	"jcz-backend/dao/learn"
+	"jcz-backend/model"
 )
 
 func GetTodayStatistic(UserID int64) (data model.LearnStatistics, err error) {

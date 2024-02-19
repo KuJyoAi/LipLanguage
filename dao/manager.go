@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"LipLanguage/model"
+	"jcz-backend/model"
 )
 
 func CreateStandardVideo(video model.StandardVideo) error {

@@ -1,10 +1,10 @@
-package api
+package logic
 
 import (
-	"LipLanguage/service"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"io"
+	"jcz-backend/service"
 	"net/http"
 )
 

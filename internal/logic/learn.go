@@ -1,11 +1,11 @@
-package api
+package logic
 
 import (
-	"LipLanguage/midware"
-	"LipLanguage/service/learn"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"io"
+	"jcz-backend/midware"
+	"jcz-backend/service/learn"
 	"net/http"
 	"strconv"
 	"time"

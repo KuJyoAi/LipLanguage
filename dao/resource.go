@@ -1,11 +1,11 @@
 package dao
 
 import (
-	"LipLanguage/common"
-	"LipLanguage/model"
 	"crypto/md5"
 	"fmt"
 	"io"
+	"jcz-backend/config"
+	"jcz-backend/model"
 	"os"
 )
 
@@ -14,7 +14,7 @@ func CreateResourceData(data []byte) (res model.Resource, err error) {
 	// 写入文件
 	filename := fmt.Sprintf("%x", md5.Sum(data))
 	res.SrcID = filename
-	path := common.SrcPath + filename
+	path := config.GetConfig().StoragePath + "/" + filename
 	res.Path = path
 	f, err := os.Create(path)
 	if err != nil {

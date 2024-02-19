@@ -1,13 +1,13 @@
 package learn
 
 import (
-	"LipLanguage/common"
-	"LipLanguage/model"
 	"bytes"
 	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
 	"io"
+	"jcz-backend/common"
+	"jcz-backend/model"
 	"mime/multipart"
 	"net/http"
 	"sync"

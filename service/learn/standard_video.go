@@ -1,11 +1,11 @@
 package learn
 
 import (
-	"LipLanguage/common"
-	"LipLanguage/dao/learn"
-	"LipLanguage/model"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"jcz-backend/common"
+	"jcz-backend/dao/learn"
+	"jcz-backend/model"
 	"os"
 	"time"
 )

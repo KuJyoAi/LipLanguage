@@ -1,7 +1,9 @@
 package config
 
 import (
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"os"
 	"sync"
 )
 
@@ -33,7 +35,6 @@ func GetConfig() *Config {
 
 		viper.AddConfigPath(".")
 		viper.AddConfigPath("./config")
-		viper.AddConfigPath("E:\\Code\\Golang\\DeepKaiwu\\LipLanguage\\config")
 
 		if err := viper.ReadInConfig(); err != nil {
 			panic(err)
@@ -42,6 +43,22 @@ func GetConfig() *Config {
 			panic(err)
 		}
 
+		if c.StoragePath == "" {
+			c.StoragePath = "./data"
+		}
+		if _, err := os.Stat(c.StoragePath); err != nil {
+			if err := os.MkdirAll(c.StoragePath, os.ModePerm); err != nil {
+				panic(err)
+			}
+		}
+
+		if c.ListenPort == "" {
+			c.ListenPort = "8080"
+		}
+
+		if c.AIUrl == "" {
+			logrus.Warn("AIUrl is empty!")
+		}
 	})
 	return &c
 }

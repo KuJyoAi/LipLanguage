@@ -9,21 +9,6 @@ import (
 
 func NewServer() *gin.Engine {
 	r := gin.Default()
-
-	//r.Use(cors.New(cors.Config{
-	//	AllowOrigins: []string{
-	//		"https://www.jczlipread.cn",
-	//		"http://localhost:3000",
-	//		"https://jczlipread.cn"},
-	//	AllowMethods:     []string{"PUT", "POST", "GET", "DELETE", "OPTIONS"},
-	//	AllowHeaders:     []string{"Origin", "Cookie", "X-Requested-With", "auth"},
-	//	ExposeHeaders:    []string{"Content-Length", "Cookie", "auth"},
-	//	AllowCredentials: true,
-	//	AllowOriginFunc: func(origin string) bool {
-	//		return true
-	//	},
-	//	MaxAge: 12 * time.Hour})) // 处理跨域问题
-
 	r.Use(cors.Default())
 
 	api := r.Group("/api")
@@ -44,25 +29,19 @@ func NewServer() *gin.Engine {
 			authUser.POST("/read_notice", logic.UserReadNotice)
 		}
 
-		learn := api.Group("learn")
-		learn.Use(midware.Auth)
+		learn := api.Group("learn", midware.Auth)
 		{
-			learn.POST("/getStandards", logic.GetStandardVideos)
-			learn.POST("/standardHistory", logic.GetStandardVideoLearnHistory)
-			learn.POST("/train", logic.UploadTrainVideo)
+			learn.POST("/time", logic.UpdateLearnTime)
+			learn.GET("/time", logic.GetLearnTime)
 
-			learnData := learn.Group("statistics")
-			{
-				learnData.POST("/today", logic.GetTodayStatistic)
-				learnData.POST("/month", logic.GetMonthRecord)
-			}
-		}
-		manager := api.Group("manager")
-		{
-			manager.POST("/uploadStandard", logic.UploadStandardVideo)
+			// TODO
+			//learn.POST("/getStandards", logic.GetStandardVideos)
+			//learn.POST("/standardHistory", logic.GetStandardVideoLearnHistory)
+			//learn.POST("/train", logic.UploadTrainVideo)
+
 		}
 
-		api.POST("/resource", midware.Auth, logic.GetResource)
+		api.POST("/oss/:id", midware.Auth, logic.GetOss)
 	}
 
 	return r

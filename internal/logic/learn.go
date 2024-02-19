@@ -1,133 +1,96 @@
 package logic
 
 import (
+	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis"
 	"github.com/sirupsen/logrus"
-	"io"
-	"jcz-backend/midware"
-	"jcz-backend/service/learn"
+	"gorm.io/gorm"
+	"jcz-backend/internal/engine"
+	"jcz-backend/model"
 	"net/http"
-	"strconv"
 	"time"
 )
 
-func UploadTrainVideo(ctx *gin.Context) {
-	VideoIDRaw := ctx.PostForm("video_id")
-	video, header, err := ctx.Request.FormFile("video")
-	if err != nil {
-		logrus.Errorf("[api.UpdateVideo] %v", err)
-		Response(ctx, http.StatusBadRequest, "视频错误", nil)
+func UpdateLearnTime(c *gin.Context) {
+	userID := c.GetUint("user_id")
+	lastTime, err := engine.GetRedisCli().Get(fmt.Sprintf("last_learn_time_%d", userID)).Int64()
+	nowTime := time.Now().Unix()
+	if errors.Is(err, redis.Nil) {
+		// 没有学习记录, 直接更新时间
+		if err := engine.GetRedisCli().Set(fmt.Sprintf("last_learn_time_%d", userID), nowTime, 2*time.Minute).Err(); err != nil {
+			logrus.Errorf("[api.UpdateLearnTime] %v", err)
+			Response(c, http.StatusInternalServerError, "内部错误", nil)
+			return
+		}
+		Response(c, http.StatusOK, "请求成功", gin.H{
+			"add_time": 0,
+		})
+	} else if err != nil {
+		logrus.Errorf("[api.UpdateLearnTime] %v", err)
+		Response(c, http.StatusInternalServerError, "内部错误", nil)
 		return
 	}
-	logrus.Infof("[api.UploadVideo] From frontend:\nname:%v size:%v Header:%v\n time=%v",
-		header.Filename, header.Size, header.Header, time.Now())
-	VideoID, err := strconv.Atoi(VideoIDRaw)
 
-	videoData, err := io.ReadAll(video)
-	if err != nil {
-		logrus.Errorf("[api.UpdateVideo] %v", err)
-		Response(ctx, http.StatusBadRequest, "视频错误", nil)
-		return
-	}
+	// 2分钟内有学习记录, 时间累加, 并且更新时间
+	_ = engine.GetSqlCli().Transaction(func(tx *gorm.DB) error {
+		var learnTime model.UserLearnTime
+		todayInt := time.Now().Format("20060102")
+		err = tx.Model(&model.UserLearnTime{}).Where("user_id = ? and time_int = ?", userID, todayInt).
+			FirstOrCreate(&learnTime).Error
+		if err != nil {
+			logrus.Errorf("[api.UpdateLearnTime] %v", err)
+			Response(c, http.StatusInternalServerError, "数据库错误", nil)
+			return err
+		}
+		learnTime.LearnTime += time.Now().Unix() - lastTime
+		if err = tx.Save(&learnTime).Error; err != nil {
+			logrus.Errorf("[api.UpdateLearnTime] %v", err)
+			Response(c, http.StatusInternalServerError, "数据库错误", nil)
+			return err
+		}
 
-	claim := midware.FromReqGetClaims(ctx)
+		if err = engine.GetRedisCli().Set(fmt.Sprintf("last_learn_time_%d", userID), nowTime, 2*time.Minute).Err(); err != nil {
+			logrus.Errorf("[api.UpdateLearnTime] %v", err)
+			Response(c, http.StatusInternalServerError, "内部错误", nil)
+			return err
+		}
 
-	res, err := learn.UploadTrainVideo(claim.Phone, int64(VideoID), videoData)
-
-	logrus.Infof("[api.UploadVideo] Send to frontend:\n err:%v ok:%v\n time=%v",
-		err, time.Now())
-	if err != nil {
-		Response(ctx, http.StatusBadRequest, err.Error(), nil)
-		return
-	} else {
-		Response(ctx, http.StatusOK, "上传成功", res)
-		return
-	}
+		Response(c, http.StatusOK, "请求成功", gin.H{
+			"add_time": time.Now().Unix() - lastTime,
+		})
+		return nil
+	})
 }
 
-func GetTodayStatistic(ctx *gin.Context) {
-	claim := midware.FromReqGetClaims(ctx)
+func GetLearnTime(c *gin.Context) {
+	userID := c.GetUint("user_id")
 
-	data, err := learn.GetTodayStatistic(claim.UserID)
+	type LearnTimeRequest struct {
+		PageIdx  int `json:"page_idx" form:"page_idx" binding:"required"`
+		PageSize int `json:"page_size" form:"page_size" binding:"required"`
+	}
 
+	var req LearnTimeRequest
+	if err := c.ShouldBind(&req); err != nil || req.PageIdx < 1 || req.PageSize < 0 {
+		logrus.Errorf("[api.GetLearnTime] %v", err)
+		Response(c, http.StatusBadRequest, "参数错误", nil)
+		return
+	}
+
+	limit := req.PageSize
+	offset := (req.PageIdx - 1) * req.PageSize
+
+	sqlCli := engine.GetSqlCli()
+	var learnTime []model.UserLearnTime
+	err := sqlCli.Model(&model.UserLearnTime{}).Where("user_id = ?", userID).Order("time_int desc").
+		Limit(limit).Offset(offset).Find(&learnTime).Error
 	if err != nil {
-		logrus.Errorf("[api.GetTodayRecord] %v", err)
-		Response(ctx, http.StatusInternalServerError, "内部错误", nil)
-		return
-	} else {
-		Response(ctx, http.StatusOK, "请求成功", data)
-	}
-}
-
-func GetMonthRecord(ctx *gin.Context) {
-	YearRaw := ctx.PostForm("year")
-	MonthRaw := ctx.PostForm("month")
-	Year, err1 := strconv.Atoi(YearRaw)
-	Month, err2 := strconv.Atoi(MonthRaw)
-	if err1 != nil || err2 != nil {
-		logrus.Errorf("[api.GetMonthRecord] %v \n%v", err1, err2)
-		Response(ctx, http.StatusBadRequest, "参数错误", nil)
-		return
-	}
-	claim := midware.FromReqGetClaims(ctx)
-
-	data, err := learn.GetMonthStatistic(claim.UserID, Year, Month)
-
-	if err != nil {
-		logrus.Errorf("[api.GetMonthRecord] %v", err)
-		Response(ctx, http.StatusInternalServerError, "内部错误", nil)
-		return
-	} else {
-		Response(ctx, http.StatusOK, "请求成功", data)
-	}
-}
-func GetStandardVideoLearnHistory(ctx *gin.Context) {
-	LimitRaw := ctx.PostForm("limit")
-	OffsetRaw := ctx.PostForm("offset")
-	VideoIDRaw := ctx.PostForm("video_id")
-	Order := ctx.PostForm("order")
-	Limit, err1 := strconv.Atoi(LimitRaw)
-	Offset, err2 := strconv.Atoi(OffsetRaw)
-	VideoID, err3 := strconv.Atoi(VideoIDRaw)
-	if err1 != nil || err2 != nil || err3 != nil {
-		logrus.Errorf("[api.GetVideoHistory] %v \n%v \n%v", err1, err2, err3)
-		Response(ctx, http.StatusBadRequest, "参数错误", nil)
+		logrus.Errorf("[api.GetLearnTime] %v", err)
+		Response(c, http.StatusInternalServerError, "数据库错误", nil)
 		return
 	}
 
-	claim := midware.FromReqGetClaims(ctx)
-
-	data, err := learn.GetStandardVideoLearnRecord(claim.UserID, int64(VideoID), Limit, Offset, Order)
-
-	if err != nil {
-		logrus.Errorf("[api.GetStandardVideoLearnHistory] %v", err)
-		Response(ctx, http.StatusInternalServerError, "内部错误", nil)
-		return
-	} else {
-		Response(ctx, http.StatusOK, "请求成功", data)
-	}
-}
-
-func GetStandardVideos(ctx *gin.Context) {
-	LimitRaw := ctx.PostForm("limit")
-	OffsetRaw := ctx.PostForm("offset")
-	Order := ctx.PostForm("order")
-	Limit, err1 := strconv.Atoi(LimitRaw)
-	Offset, err2 := strconv.Atoi(OffsetRaw)
-	if err1 != nil || err2 != nil {
-		logrus.Errorf("[api.GetVideoHistory] %v %v", err1, err2)
-		Response(ctx, http.StatusBadRequest, "参数错误", nil)
-		return
-	}
-
-	claims := midware.FromReqGetClaims(ctx)
-	data, err := learn.GetAllStandardVideos(claims.UserID, Limit, Offset, Order)
-
-	if err != nil {
-		logrus.Errorf("[api.GetAllStandardVideos] %v", err)
-		Response(ctx, http.StatusInternalServerError, "内部错误", nil)
-		return
-	} else {
-		Response(ctx, http.StatusOK, "请求成功", data)
-	}
+	Response(c, http.StatusOK, "请求成功", learnTime)
 }

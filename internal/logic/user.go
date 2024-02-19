@@ -281,44 +281,6 @@ func UserVerify(ctx *gin.Context) {
 	})
 }
 
-func UserUpdatePhone(ctx *gin.Context) {
-	type UpdatePhoneParam struct {
-		Phone string `json:"phone,omitempty"`
-	}
-	param := UpdatePhoneParam{}
-	if err := ctx.ShouldBind(&param); err != nil {
-		logrus.Errorf("[api.UpdatePhone] %v", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"msg": "参数错误",
-		})
-		return
-	}
-
-	NumPhone, err := strconv.Atoi(param.Phone)
-	if err != nil {
-		logrus.Errorf("[api.UserVerify] %v", err)
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"msg": "手机号不合法",
-		})
-		return
-	}
-	userID := ctx.GetUint("user_id")
-	if engine.GetSqlCli().Model(model.User{}).Where("id = ?", userID).
-		Update("phone", int64(NumPhone)).Error != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"msg": "修改失败",
-		})
-		return
-	} else {
-		ctx.JSON(http.StatusOK, gin.H{
-			"msg": "修改成功",
-			"data": gin.H{
-				"new_phone": param.Phone,
-			},
-		})
-	}
-}
-
 func UserUpdatePasswordByToken(ctx *gin.Context) {
 	type UpdatePasswordParam struct {
 		NewPassword string `json:"new_password" form:"new_password" binding:"required"`

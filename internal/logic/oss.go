@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"jcz-backend/config"
+	"jcz-backend/utils"
 	"os"
 )
 
@@ -14,7 +15,7 @@ func GetOss(ctx *gin.Context) {
 	data, err := os.ReadFile(config.GetConfig().StoragePath + "/" + SrcID)
 	if err != nil {
 		logrus.Errorf("GetOss %v", err)
-		Response(ctx, 404, "资源不存在", nil)
+		utils.Response(ctx, 404, "资源不存在", nil)
 		return
 	}
 

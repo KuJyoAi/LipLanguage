@@ -1,25 +1,19 @@
 package model
 
-import (
-	"gorm.io/gorm"
-)
+import "gorm.io/gorm"
 
-// LearnRecord 学习记录
-type LearnRecord struct {
+type Question struct {
 	gorm.Model
-
-	UserID  int64  `gorm:"index" json:"user_id,omitempty"`
-	VideoID int64  `gorm:"video_id,index" json:"video_id,omitempty"`
-	Result  string `gorm:"result" json:"result,omitempty"`
-	Right   bool   `gorm:"right" json:"right,omitempty"`
-	SrcID   string `gorm:"src_id" json:"video_src,omitempty"`
-	LipID   string `gorm:"lip_id" json:"video_lip,omitempty"`
+	Type   string `gorm:"type" json:"type"`
+	Answer string `gorm:"answer" json:"answer"`
+	Src    string `gorm:"src" json:"src"`   // 资源文件
+	Desc   string `gorm:"desc" json:"desc"` // 描述
 }
 
-// UserLearnTime 用户学习时长的记录(每日)
-type UserLearnTime struct {
+type UserLearnRecord struct {
 	gorm.Model
-	UserID    uint  `gorm:"user_id,uniqueIndex:idx" json:"-"`
-	TimeInt   int   `gorm:"time_int,uniqueIndex:idx" json:"time_int"`
-	LearnTime int64 `gorm:"learn_time" json:"learn_time"`
+	UserID     uint   `gorm:"user_id" json:"user_id"`
+	QuestionID uint   `gorm:"question_id" json:"question_id"`
+	Result     string `gorm:"result" json:"result"`
+	Right      bool   `gorm:"right" json:"right"`
 }

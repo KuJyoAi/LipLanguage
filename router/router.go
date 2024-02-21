@@ -34,11 +34,9 @@ func NewServer() *gin.Engine {
 			learn.POST("/time", logic.UpdateLearnTime)
 			learn.GET("/time", logic.GetLearnTime)
 
-			// TODO
-			//learn.POST("/getStandards", logic.GetStandardVideos)
-			//learn.POST("/standardHistory", logic.GetStandardVideoLearnHistory)
-			//learn.POST("/train", logic.UploadTrainVideo)
-
+			learn.GET("/questions", logic.GetQuestions)
+			learn.POST("/answer", logic.AnswerQuestion)
+			learn.GET("/history", logic.GetLearnHistory)
 		}
 
 		api.POST("/oss/:id", midware.Auth, logic.GetOss)

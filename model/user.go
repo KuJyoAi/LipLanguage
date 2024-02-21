@@ -27,3 +27,11 @@ type Notice struct {
 	Title   string `gorm:"title" json:"title"`
 	Content string `gorm:"content" json:"content"`
 }
+
+// UserLearnTime 用户学习时长的记录(每日)
+type UserLearnTime struct {
+	gorm.Model
+	UserID    uint  `gorm:"user_id,uniqueIndex:idx" json:"-"`
+	TimeInt   int   `gorm:"time_int,uniqueIndex:idx" json:"time_int"`
+	LearnTime int64 `gorm:"learn_time" json:"learn_time"`
+}

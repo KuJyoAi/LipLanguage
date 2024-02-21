@@ -94,3 +94,113 @@ func GetLearnTime(c *gin.Context) {
 
 	Response(c, http.StatusOK, "请求成功", learnTime)
 }
+
+func GetQuestions(c *gin.Context) {
+	type Request struct {
+		PageIdx  int `json:"page_idx" form:"page_idx" binding:"required"`
+		PageSize int `json:"page_size" form:"page_size" binding:"required"`
+	}
+
+	var req Request
+	if err := c.ShouldBind(&req); err != nil || req.PageIdx < 1 || req.PageSize < 0 {
+		logrus.Errorf("[api.GetQuestions] %v", err)
+		Response(c, http.StatusBadRequest, "参数错误", nil)
+		return
+	}
+
+	limit := req.PageSize
+	offset := (req.PageIdx - 1) * req.PageSize
+
+	sqlCli := engine.GetSqlCli()
+	var questions []model.Question
+	err := sqlCli.Model(&model.Question{}).Order("id desc").Limit(limit).Offset(offset).Find(&questions).Error
+	if err != nil {
+		logrus.Errorf("[api.GetQuestions] %v", err)
+		Response(c, http.StatusInternalServerError, "数据库错误", nil)
+		return
+	}
+
+	Response(c, http.StatusOK, "请求成功", questions)
+}
+
+func AnswerQuestion(c *gin.Context) {
+	type AnswerQuestionRequest struct {
+		QuestionID uint   `json:"question_id" form:"question_id" binding:"required"`
+		Result     string `json:"result" form:"result" binding:"required"`
+	}
+	type AnswerQuestionResponse struct {
+		Right      bool   `json:"right"`
+		Answer     string `json:"answer"`
+		UserAnswer string `json:"user_answer"`
+	}
+
+	var req AnswerQuestionRequest
+	if err := c.ShouldBind(&req); err != nil {
+		logrus.Errorf("[api.AnswerQuestion] %v", err)
+		Response(c, http.StatusBadRequest, "参数错误", nil)
+		return
+	}
+
+	userID := c.GetUint("user_id")
+
+	// judge the answer
+	sqlCli := engine.GetSqlCli()
+	var question model.Question
+	err := sqlCli.Model(&model.Question{}).Where("id = ?", req.QuestionID).First(&question).Error
+	if err != nil {
+		logrus.Errorf("[api.AnswerQuestion] %v", err)
+		Response(c, http.StatusInternalServerError, "数据库错误", nil)
+		return
+	}
+
+	right := question.Answer == req.Result
+	learnRecord := model.UserLearnRecord{
+		UserID:     userID,
+		QuestionID: req.QuestionID,
+		Result:     req.Result,
+		Right:      right,
+	}
+
+	err = sqlCli.Create(&learnRecord).Error
+	if err != nil {
+		logrus.Errorf("[api.AnswerQuestion] %v", err)
+		Response(c, http.StatusInternalServerError, "数据库错误", nil)
+		return
+	}
+
+	Response(c, http.StatusOK, "请求成功", AnswerQuestionResponse{
+		Right:  right,
+		Answer: question.Answer,
+	})
+}
+
+func GetLearnHistory(c *gin.Context) {
+	userID := c.GetUint("user_id")
+
+	type LearnHistoryRequest struct {
+		PageIdx  int `json:"page_idx" form:"page_idx" binding:"required"`
+		PageSize int `json:"page_size" form:"page_size" binding:"required"`
+	}
+
+	var req LearnHistoryRequest
+	if err := c.ShouldBind(&req); err != nil || req.PageIdx < 1 || req.PageSize < 0 {
+		logrus.Errorf("[api.GetLearnHistory] %v", err)
+		Response(c, http.StatusBadRequest, "参数错误", nil)
+		return
+	}
+
+	limit := req.PageSize
+	offset := (req.PageIdx - 1) * req.PageSize
+
+	sqlCli := engine.GetSqlCli()
+	var learnHistory []model.UserLearnRecord
+	err := sqlCli.Model(&model.UserLearnRecord{}).Where("user_id = ?", userID).Order("id desc").
+		Limit(limit).Offset(offset).Find(&learnHistory).Error
+	if err != nil {
+		logrus.Errorf("[api.GetLearnHistory] %v", err)
+		Response(c, http.StatusInternalServerError, "数据库错误", nil)
+		return
+	}
+
+	Response(c, http.StatusOK, "请求成功", learnHistory)
+}

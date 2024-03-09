@@ -28,6 +28,7 @@ func UpdateLearnTime(c *gin.Context) {
 		utils.Response(c, http.StatusOK, "请求成功", gin.H{
 			"add_time": 0,
 		})
+		return
 	} else if err != nil {
 		logrus.Errorf("[api.UpdateLearnTime] %v", err)
 		utils.Response(c, http.StatusInternalServerError, "内部错误", nil)
@@ -36,15 +37,19 @@ func UpdateLearnTime(c *gin.Context) {
 
 	// 2分钟内有学习记录, 时间累加, 并且更新时间
 	_ = engine.GetSqlCli().Transaction(func(tx *gorm.DB) error {
-		var learnTime model.UserLearnTime
-		todayInt := time.Now().Format("20060102")
-		err = tx.Model(&model.UserLearnTime{}).Where("user_id = ? and time_int = ?", userID, todayInt).
+		todayIntStr := time.Now().Format("20060102")
+		learnTime := model.UserLearnTime{
+			UserID:  userID,
+			TimeInt: time.Now().Year()*10000 + int(time.Now().Month())*100 + time.Now().Day(),
+		}
+		err = tx.Model(&model.UserLearnTime{}).Where("user_id = ? and time_int = ?", userID, todayIntStr).
 			FirstOrCreate(&learnTime).Error
 		if err != nil {
 			logrus.Errorf("[api.UpdateLearnTime] %v", err)
 			utils.Response(c, http.StatusInternalServerError, "数据库错误", nil)
 			return err
 		}
+
 		learnTime.LearnTime += time.Now().Unix() - lastTime
 		if err = tx.Save(&learnTime).Error; err != nil {
 			logrus.Errorf("[api.UpdateLearnTime] %v", err)

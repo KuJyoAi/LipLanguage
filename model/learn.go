@@ -2,6 +2,12 @@ package model
 
 import "gorm.io/gorm"
 
+const (
+	QuestionsTypeElementary = "element"
+	QuestionsTypeCharacter  = "char"
+	QuestionsTypeWord       = "word"
+)
+
 type Question struct {
 	gorm.Model
 	Type   string `gorm:"type" json:"type"`

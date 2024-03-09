@@ -39,7 +39,7 @@ func NewServer() *gin.Engine {
 			learn.GET("/history", logic.GetLearnHistory)
 		}
 
-		api.POST("/oss/:id", midware.Auth, logic.GetOss)
+		api.GET("/oss/:id", midware.Auth, logic.GetOss)
 	}
 
 	return r

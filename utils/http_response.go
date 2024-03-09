@@ -7,6 +7,7 @@ func Response(ctx *gin.Context, code int, msg string, data interface{}) {
 		ctx.JSON(code, gin.H{
 			"msg": msg,
 		})
+		return
 	}
 	ctx.JSON(code, gin.H{
 		"msg":  msg,

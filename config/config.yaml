@@ -1,14 +1,14 @@
 listen_port: 8080
 ai_url: http://localhost:5000
-storage_path: /tmp
+storage_path: ./data
 jwt_secret: "123456"
 
 mysql:
   addr: localhost:3306
   user: root
-  password: 123456
+  password: deepkw_lipread
   database: jcz
 
 redis:
   addr: localhost:6379
-  password: "123456"
+  password: "123"

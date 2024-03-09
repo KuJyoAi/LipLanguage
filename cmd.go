@@ -22,6 +22,8 @@ func init() {
 	rootCmd.AddCommand(testCmd)
 
 	rootCmd.AddCommand(migrateDBCmd)
+
+	rootCmd.AddCommand(buildLearnCmd)
 }
 
 var migrateDBCmd = &cobra.Command{
@@ -60,5 +62,12 @@ var testCmd = &cobra.Command{
 	Use: "test",
 	Run: func(cmd *cobra.Command, args []string) {
 		println("test")
+	},
+}
+
+var buildLearnCmd = &cobra.Command{
+	Use: "build_learn",
+	Run: func(cmd *cobra.Command, args []string) {
+		// TODO: build learn data
 	},
 }

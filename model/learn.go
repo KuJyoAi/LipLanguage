@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"gorm.io/gorm"
 )
 
@@ -12,11 +13,9 @@ const (
 
 type Question struct {
 	gorm.Model
-	Type string `gorm:"type:varchar(20)" json:"type"`
-	//Data          json.RawMessage `gorm:"type:json" json:"data"`
-	// 直接从目录下找文件
-	Answer        string `json:"answer"`         // 答案
-	ConfuseAnswer string `json:"confuse_answer"` // 错误答案
+	Type   string          `gorm:"type:varchar(20)" json:"type"`
+	Data   json.RawMessage `gorm:"type:json" json:"data"`
+	Answer string          `json:"answer"` // 答案
 }
 
 func (Question) TableName() string {

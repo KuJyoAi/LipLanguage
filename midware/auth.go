@@ -22,6 +22,14 @@ func Auth(ctx *gin.Context) {
 		return
 	}
 
+	if len(token) < 7 || token[:7] != "Bearer " {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"msg": "token无效",
+		})
+		return
+	}
+	token = token[7:]
+
 	//解析token
 	claims, err := utils.VerifyJWT(token)
 	if err != nil {

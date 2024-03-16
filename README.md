@@ -25,7 +25,6 @@ a
 |--你.mp4 # 单字的视频
 |--desc.txt # 单字的发音描述
 |--spell.jpg # 单字的发音图
-|--spell.txt # 单字的拼音, 里面写"nǐ"(不带引号)
 |--voice.mp3 # 单字的发音
 |--lip.jpg # 唇形图
 |--video.mp4 # 单字的视频
